@@ -1,0 +1,19 @@
+
+Reese's TODO:
+	create base of app w/ main activity
+	integrate camera
+		access file storage for images or pdfs of health records
+	create login activity
+	create settings activity
+	
+	
+Thoughts and notes
+	will need a sort of user login
+		keep logged in until manually log out
+		link to .db access and online db access
+		
+	need to access user's files to get images or pdfs of health records
+		can we turn pdf directly into an image?
+			is this worth doing, or make the user screenshot it themself?
+			probably better if we do it, otherwise we may get info from navigation bar
+		will probably still need to do this to get most recent camera image file unless API returns it
