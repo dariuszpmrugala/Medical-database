@@ -4,6 +4,7 @@
     <string name="title_archive">Records Archive</string>
     <string name="title_plots">Plots</string>
     <string name="title_activity_login">Sign in</string>
+    <string name="camera_button_text">Add a photo</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
