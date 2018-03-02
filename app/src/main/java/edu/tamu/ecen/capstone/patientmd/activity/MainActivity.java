@@ -1,25 +1,33 @@
 package edu.tamu.ecen.capstone.patientmd.activity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.util.Log;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.input.RecordPhoto;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTextMessage;
 
+    private final String TAG = "MainActivity: ";
+
     //app specific permission codes; to add more permissions, include in setPermissions and AndroidManifest.xml
     private final int PERMISSION_CAMERA_CODE=1;
     private final int PERMISSION_READ_EXT_STORAGE_CODE=2;
     private final int PERMISSION_WRITE_EXT_STORAGE_CODE=3;
+
+    private Button cameraButton;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -39,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
                     mTextMessage.setText(R.string.title_plots);
                     return true;
             }
+            Log.d(TAG, "NavigationMenuListener");
             return false;
         }
     };
@@ -47,16 +56,38 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG, "onCreate");
 
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         //todo add this from R, and create an onClickListener; should call to RecordPhoto
-        Button cameraButton;
+        initView();
 
         //get set of permissions from the user
         requestPermissionCamera();
+
+    }
+
+
+/*
+Function sets the initial view whenever the app is opened
+ */
+    private void initView() {
+        //setup the button for accessing the camera
+        cameraButton = (Button) findViewById(R.id.photo_button);
+        cameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!RecordPhoto.isRunning) {
+                    //Maybe not use this type of context??
+                    RecordPhoto.takePhoto(getApplicationContext());
+                }
+                else Log.d(TAG, "Cam button click; unavailable");
+            }
+        });
+
 
     }
 
