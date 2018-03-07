@@ -1,16 +1,18 @@
 package edu.tamu.ecen.capstone.patientmd.input;
 
 
+import android.Manifest;
 import android.content.Context;
-import android.graphics.Camera;
+import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.media.Image;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
-
-import java.io.File;
 
 /**
  * Created by reesul on 2/27/2018.
@@ -19,9 +21,32 @@ import java.io.File;
 public class RecordPhoto  {
 
     protected static CameraManager mCameraManager = null;
+    protected static CameraDevice mCameraDevice;
+    protected static String mCameraId;
+
+    private static Handler mBackgroundHandler;
+    private static HandlerThread mBackgroundThread;
+
     public static boolean isRunning = false;
 
     private static String TAG  = "RecordPhoto: ";
+
+    protected void startBackgroundThread() {
+        mBackgroundThread = new HandlerThread("Camera Background");
+        mBackgroundThread.start();
+        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+    }
+    protected void stopBackgroundThread() {
+        mBackgroundThread.quitSafely();
+        try {
+            mBackgroundThread.join();
+            mBackgroundThread = null;
+            mBackgroundHandler = null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public RecordPhoto() {
     }
@@ -32,12 +57,12 @@ public class RecordPhoto  {
      */
     private static String getManager(Context context) {
         mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        String camInfo = new String();
+        String camInfo=null;
 
         try {
-            String camId = mCameraManager.getCameraIdList()[0];
-            CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(camId);
-            camInfo += "Has Flash: " + characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) + " \n";
+            mCameraId = mCameraManager.getCameraIdList()[0];
+            CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(mCameraId);
+            camInfo = "Has Flash: " + characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) + " \n";
             Integer facingDir = characteristics.get(CameraCharacteristics.LENS_FACING);
             if (facingDir==CameraCharacteristics.LENS_FACING_FRONT)
                 camInfo+="Camera facing forward\n";
@@ -62,6 +87,26 @@ public class RecordPhoto  {
             Log.d(TAG, camInfo);
         }
 
+        if(mCameraDevice == null) {
+            Log.d(TAG, "Camera device does not exist");
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                mCameraManager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
+
+
+            }
+            catch (CameraAccessException e) {
+                Log.w(TAG, "Error accessing camera: ", e);
+            }
+        }
+        else {
+            Log.d(TAG, "takePhoto: permission to camera not granted");
+            return;
+        }
+
         //TODO!!!  make handler (may need to do in the main activity, create additional thread
         //todo      register this availability callback
         //todo      register a stateCallback for a camera device used for mCameraManager.openCamera()
@@ -76,7 +121,7 @@ public class RecordPhoto  {
     /*
     This will notify us if the camera is currently unavailable
      */
-    static CameraManager.AvailabilityCallback availabilityCallback = new CameraManager.AvailabilityCallback() {
+    private static CameraManager.AvailabilityCallback availabilityCallback = new CameraManager.AvailabilityCallback() {
         @Override
         public void onCameraAvailable(@NonNull String cameraId) {
             super.onCameraAvailable(cameraId);
@@ -90,6 +135,26 @@ public class RecordPhoto  {
             //todo make this a message the user can see
             Log.d(TAG, "Camera unavailable, sorry champ.");
         }*/
+    };
+
+
+    private static final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+        @Override
+        public void onOpened(CameraDevice camera) {
+            //This is called when the camera is open
+            Log.e(TAG, "onOpened");
+            mCameraDevice = camera;
+            //createCameraPreview();
+        }
+        @Override
+        public void onDisconnected(CameraDevice camera) {
+            mCameraDevice.close();
+        }
+        @Override
+        public void onError(CameraDevice camera, int error) {
+            mCameraDevice.close();
+            mCameraDevice = null;
+        }
     };
 
 }
