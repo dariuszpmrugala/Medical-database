@@ -5,14 +5,20 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.util.Size;
+import android.util.SparseIntArray;
+import android.view.Surface;
+import android.view.TextureView;
 
 /**
  * Created by reesul on 2/27/2018.
@@ -26,6 +32,21 @@ public class RecordPhoto  {
 
     private static Handler mBackgroundHandler;
     private static HandlerThread mBackgroundThread;
+    private static CameraCaptureSession mCameraCaptureSession;
+
+    private static Size previewsize;
+    private static Size jpegSizes[]=null;
+    private TextureView textureView;
+    private CaptureRequest.Builder previewBuilder;
+    private CameraCaptureSession previewSession;
+    private static final SparseIntArray ORIENTATIONS=new SparseIntArray();
+    static
+    {
+        ORIENTATIONS.append(Surface.ROTATION_0,90);
+        ORIENTATIONS.append(Surface.ROTATION_90,0);
+        ORIENTATIONS.append(Surface.ROTATION_180,270);
+        ORIENTATIONS.append(Surface.ROTATION_270,180);
+    }
 
     public static boolean isRunning = false;
 
@@ -85,6 +106,7 @@ public class RecordPhoto  {
         if(mCameraManager==null) {
             String camInfo = getManager(context);
             Log.d(TAG, camInfo);
+
         }
 
         if(mCameraDevice == null) {

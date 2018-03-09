@@ -1,11 +1,16 @@
 package edu.tamu.ecen.capstone.patientmd.activity;
 
 import android.Manifest;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,7 +19,11 @@ import android.widget.TextView;
 import android.util.Log;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.input.Camera2BasicFragment;
+import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.input.RecordPhoto;
+import edu.tamu.ecen.capstone.patientmd.activity.PhotoActivity;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
 /*
 Function sets the initial view whenever the app is opened
  */
@@ -80,11 +91,31 @@ Function sets the initial view whenever the app is opened
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
+
+                //when the user clicks the button, they should be prompted to confirm they want to take a picture
+                new AlertDialog.Builder(MainActivity.this)
+                        .setMessage(R.string.camera_confirmation)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //begin process to taking a picture
+                                Intent intent = new Intent(MainActivity.this, PhotoActivity.class);
+                                startActivity(intent);
+                            }
+                        })
+                        .show();
+                /*
                 if (!RecordPhoto.isRunning) {
+                    //TODO provide new record here, give popup window to select new photo or existing file
                     //Maybe not use this type of context??
+
+                    //todo change this to start an activity that handles all of the camera stuff
                     RecordPhoto.takePhoto(getApplicationContext());
                 }
                 else Log.d(TAG, "Cam button click; unavailable");
+                */
             }
         });
 
@@ -112,7 +143,8 @@ Function sets the initial view whenever the app is opened
                     requestPermissions(new String[]{Manifest.permission.CAMERA}, );
                 }
             });*/
-            shouldShowRequestPermissionRationale("Camera access is required so you can take images of your health records within the app");
+            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA);
+            //shouldShowRequestPermissionRationale("Camera access is required so you can take images of your health records within the app");
             requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA_CODE);
         }
 

@@ -4,7 +4,8 @@
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
 
-    <!-- Permissions used-->
+
+    <!-- Permissions used -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -12,7 +13,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Features used-->
+    <!-- Features used -->
     <uses-feature android:name="android.hardware.camera2.full" />
 
     <application
@@ -33,7 +34,11 @@
         </activity>
         <activity
             android:name=".activity.LoginActivity"
-            android:label="@string/title_activity_login"></activity>
+            android:label="@string/title_activity_login" />
+        <activity
+            android:name=".activity.PhotoActivity"
+            android:label="@string/title_activity_photo"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
