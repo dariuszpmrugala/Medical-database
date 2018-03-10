@@ -73,6 +73,7 @@ import java.util.concurrent.TimeUnit;
 
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.view.AutoFitTextureView;
+import edu.tamu.ecen.capstone.patientmd.util.*;
 
 
 public class Camera2BasicFragment extends Fragment
@@ -248,6 +249,15 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         public void onImageAvailable(ImageReader reader) {
+            Util.permissionExternalWrite(getActivity());
+            try {
+                if (!mFile.getParentFile().exists())
+                    mFile.getParentFile().mkdirs();
+                if (!mFile.exists())
+                    mFile.createNewFile();
+            } catch (IOException e) {
+                Log.e(TAG, "onImageAvailable: Error", e);
+            }
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
         }
 
@@ -291,8 +301,9 @@ public class Camera2BasicFragment extends Fragment
     private CameraCaptureSession.CaptureCallback mCaptureCallback
             = new CameraCaptureSession.CaptureCallback() {
 
+        int waitCounter = 0;
         private void process(CaptureResult result) {
-            Log.d(TAG, "CaptureCallback: state has " + mState);
+            Log.d(TAG, "CaptureCallback.process: " + mState + " is state, count: "+waitCounter);
             switch (mState) {
                 case STATE_PREVIEW: {
                     // We have nothing to do when the camera preview is working normally.
@@ -300,20 +311,30 @@ public class Camera2BasicFragment extends Fragment
                 }
                 case STATE_WAITING_LOCK: {
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
-                    Log.d(TAG, "CaptureCallback: state waiting, focus state: " + afState);
                     if (afState == null) {
                         captureStillPicture();
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
-                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState ||
+                            waitCounter >=30) {
                         // CONTROL_AE_STATE can be null on some devices
                         Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                         if (aeState == null ||
                                 aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
                             mState = STATE_PICTURE_TAKEN;
+                            waitCounter=0;
                             captureStillPicture();
                         } else {
                             runPrecaptureSequence();
                         }
+                    }
+                    else {
+                        if(waitCounter > 30){
+                            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                                    CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+                            //TODO Trigger autofocus here
+                            waitCounter=0;
+                        }
+                        else waitCounter++;
                     }
                     break;
                 }
@@ -441,7 +462,9 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mFile = new File(getActivity().getExternalFilesDir(null), "pic.jpg");
+        //location of file, uses a file for this app under DCIM in external storage
+        String filePath = Const.IMG_FILEPATH + "/" + Util.dateForFile(System.currentTimeMillis()) + ".jpg";
+        mFile = new File(filePath);
     }
 
     @Override
@@ -467,6 +490,7 @@ public class Camera2BasicFragment extends Fragment
         super.onPause();
     }
 
+    @Deprecated
     private void requestCameraPermission() {
         if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
             new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
@@ -611,12 +635,16 @@ public class Camera2BasicFragment extends Fragment
      * Opens the camera specified by {@link Camera2BasicFragment#mCameraId}.
      */
     private void openCamera(int width, int height) {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestCameraPermission();
-            return;
-        }
         Log.d(TAG,"openCamera");
+        if (!Util.permissionCamera(this.getActivity()))
+            return;
+        /*if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            //requestCameraPermission();
+            //Try to get permission to use the camera.. if not, do not continue
+            if (!Util.permissionCamera(this.getActivity()))
+                return;
+        }*/
 
         setUpCameraOutputs(width, height);
         configureTransform(width, height);
@@ -626,7 +654,9 @@ public class Camera2BasicFragment extends Fragment
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
-            manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
+            if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+                manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
+            else Log.w(TAG, "openCamera: User has not given permission; cannot open camera");
             Log.d(TAG,"openCamera: Camera opened");
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -831,7 +861,7 @@ public class Camera2BasicFragment extends Fragment
             Log.d(TAG, "CaptureStillPicture");
             final Activity activity = getActivity();
             if (null == activity || null == mCameraDevice) {
-                Log.d(TAG,"captureStillPicture: activity or camera device is null");
+                Log.d(TAG,"CaptureStillPicture: activity or camera device is null");
                 return;
             }
             // This is the CaptureRequest.Builder that we use to take a picture.
@@ -841,7 +871,7 @@ public class Camera2BasicFragment extends Fragment
 
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                    CaptureRequest.CONTROL_AF_MODE_AUTO);
             setAutoFlash(captureBuilder);
 
             // Orientation
@@ -957,6 +987,9 @@ public class Camera2BasicFragment extends Fragment
             buffer.get(bytes);
             FileOutputStream output = null;
             try {
+
+
+
                 output = new FileOutputStream(mFile);
                 output.write(bytes);
             } catch (IOException e) {
@@ -966,9 +999,12 @@ public class Camera2BasicFragment extends Fragment
                 if (null != output) {
                     try {
                         output.close();
+                        Log.d(TAG, "ImageSaver: save to:" + mFile.getAbsolutePath());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
+                    //todo preview image for user, give them the option to take a new one, or go back to home screen
                 }
             }
         }
