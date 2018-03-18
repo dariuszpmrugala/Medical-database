@@ -22,8 +22,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -57,6 +60,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -72,6 +76,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.activity.PhotoActivity;
 import edu.tamu.ecen.capstone.patientmd.view.AutoFitTextureView;
 import edu.tamu.ecen.capstone.patientmd.util.*;
 
@@ -236,7 +241,6 @@ public class Camera2BasicFragment extends Fragment
 
     /**
      * This is the output file for our picture.
-     * TODO: return this to the main activity, or save into storage somewhere that we can get to
      */
     private File mFile;
 
@@ -249,6 +253,7 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         public void onImageAvailable(ImageReader reader) {
+            //get permission to write a file to external storage if we don't have it already
             Util.permissionExternalWrite(getActivity());
             try {
                 if (!mFile.getParentFile().exists())
@@ -259,6 +264,21 @@ public class Camera2BasicFragment extends Fragment
                 Log.e(TAG, "onImageAvailable: Error", e);
             }
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
+
+            Log.d(TAG, "onImageAvailable:: try restarting activity with new intent");
+            final Intent imageIntent = new Intent(getContext(), PhotoActivity.class);
+            mBackgroundHandler.postDelayed(new Runnable(){
+
+                @Override
+                public void run() {
+
+                    imageIntent.putExtra("filepath", mFile.getAbsolutePath());
+                    imageIntent.putExtra("image", true);
+                    startActivity(imageIntent);
+                }
+            }, 50);
+            closeCamera();
+
         }
 
     };
@@ -980,8 +1000,12 @@ public class Camera2BasicFragment extends Fragment
             mFile = file;
         }
 
+        /*
+        Here we will get the image and save it into the file
+         */
         @Override
         public void run() {
+            Log.d(TAG, "ImageSaver run()::");
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
@@ -992,6 +1016,9 @@ public class Camera2BasicFragment extends Fragment
 
                 output = new FileOutputStream(mFile);
                 output.write(bytes);
+
+                //add data to intent to let PhotoActivity know to show the image at the provided file path
+
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -1000,11 +1027,14 @@ public class Camera2BasicFragment extends Fragment
                     try {
                         output.close();
                         Log.d(TAG, "ImageSaver: save to:" + mFile.getAbsolutePath());
+
+
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                    //todo preview image for user, give them the option to take a new one, or go back to home screen
+
                 }
             }
         }
@@ -1088,5 +1118,8 @@ public class Camera2BasicFragment extends Fragment
                     .create();
         }
     }
+
+
+
 
 }

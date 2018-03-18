@@ -1,12 +1,7 @@
 package edu.tamu.ecen.capstone.patientmd.activity;
 
-import android.Manifest;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -19,11 +14,6 @@ import android.widget.TextView;
 import android.util.Log;
 
 import edu.tamu.ecen.capstone.patientmd.R;
-import edu.tamu.ecen.capstone.patientmd.input.Camera2BasicFragment;
-import edu.tamu.ecen.capstone.patientmd.util.Const;
-import edu.tamu.ecen.capstone.patientmd.input.RecordPhoto;
-import edu.tamu.ecen.capstone.patientmd.activity.PhotoActivity;
-import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 
 public class MainActivity extends AppCompatActivity {
