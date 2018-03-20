@@ -24,6 +24,8 @@ import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
+import static edu.tamu.ecen.capstone.patientmd.util.Const.IMG_FILEPATH;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -133,6 +135,7 @@ Function sets the initial view whenever the app is opened
     static final int REQUEST_TAKE_PHOTO = 1;
 
     private void dispatchTakePictureIntent() {
+        Util.permissionCamera(this);
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -147,7 +150,7 @@ Function sets the initial view whenever the app is opened
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.example.android.fileprovider",
+                        "edu.tamu.ecen.capstone.input.fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
@@ -159,13 +162,14 @@ Function sets the initial view whenever the app is opened
 
     private File createImageFile() throws IOException {
         // Create an image file name
-        String imageFileName = "JPEG_" + Util.dateForFile(System.currentTimeMillis()) + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
+        Util.permissionExternalWrite(this);
+        String imageFileName = IMG_FILEPATH + "/" + Util.dateForFile(System.currentTimeMillis()) + ".jpg";
+        File image = new File(imageFileName);
+        image.getParentFile().mkdirs();
+        image.createNewFile();
+
+        if(image.exists())
+            Log.d(TAG,"createImageFile:: file created successfully");
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
