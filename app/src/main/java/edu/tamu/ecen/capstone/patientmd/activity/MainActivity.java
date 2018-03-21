@@ -1,10 +1,10 @@
 package edu.tamu.ecen.capstone.patientmd.activity;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -13,15 +13,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 
 import edu.tamu.ecen.capstone.patientmd.R;
-import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 import static edu.tamu.ecen.capstone.patientmd.util.Const.IMG_FILEPATH;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             //TODO use setContentView to show different screens
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    mTextMessage.setText(R.string.title_home);
+                    mTextMessage.setText(null);
                     return true;
                 case R.id.navigation_archive:
                     mTextMessage.setText(R.string.title_archive);
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate");
 
@@ -72,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        //todo add this from R, and create an onClickListener; should call to RecordPhoto
         initView();
 
         //get set of permissions from the user
@@ -89,7 +90,7 @@ Function sets the initial view whenever the app is opened
     private void initView() {
         Log.d(TAG, "initView");
         //setup the button for accessing the camera
-        cameraButton = (Button) findViewById(R.id.photo_button);
+        cameraButton = (Button) findViewById(R.id.new_record_button);
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +133,7 @@ Function sets the initial view whenever the app is opened
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
-    static final int REQUEST_TAKE_PHOTO = 1;
+    static final int REQUEST_TAKE_PHOTO = 1559;
 
     private void dispatchTakePictureIntent() {
         Util.permissionCamera(this);
@@ -157,6 +158,20 @@ Function sets the initial view whenever the app is opened
             }
         }
     }
+
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
+            int index = mCurrentPhotoPath.lastIndexOf("/");
+            String toastMessage = mCurrentPhotoPath.substring(index+1, mCurrentPhotoPath.length());
+            Log.d(TAG,"onActivityResult:: File: "+mCurrentPhotoPath);
+            Toast.makeText(getApplicationContext(), "Filename: "+toastMessage, Toast.LENGTH_LONG)
+                .show();
+
+            //ToDo: anything that requires the picture as soon as it is taken
+        }
+    }
+
 
     String mCurrentPhotoPath;
 

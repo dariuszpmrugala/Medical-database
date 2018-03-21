@@ -4,7 +4,7 @@
     <string name="title_archive">Records Archive</string>
     <string name="title_plots">Plots</string>
     <string name="title_activity_login">Sign in</string>
-    <string name="camera_button_text">Add a photo</string>
+    <string name="add_record_text">Add new Record</string>
     <string name="picture">Picture</string>
     <string name="description_info">Info</string>
     <string name="request_permission">This sample needs camera permission.</string>
