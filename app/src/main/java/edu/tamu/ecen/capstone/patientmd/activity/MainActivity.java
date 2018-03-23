@@ -48,14 +48,13 @@ public class MainActivity extends AppCompatActivity {
     private Button cameraButton;
 
 
-
+    //todo use a selector to make the icons change
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-            //TODO use setContentView to show different screens/fragment
             return selectFragment(item);
 
             /*
@@ -89,9 +88,13 @@ public class MainActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         //initView();
 
+
         //get set of permissions from the user
-
-
+        /*Fragment homeFrag = HomeFragment.newInstance(null);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.container, homeFrag, homeFrag.getTag());
+        ft.commit();
+*/
     }
 
 

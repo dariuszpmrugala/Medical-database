@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.tamu.ecen.capstone.patientmd.R;
-import edu.tamu.ecen.capstone.patientmd.activity.MainActivity;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 import static edu.tamu.ecen.capstone.patientmd.util.Const.IMG_FILEPATH;
@@ -78,15 +77,25 @@ public class HomeFragment extends Fragment {
 
                 //when the user clicks the button, they should be prompted to confirm they want to take a picture
                 new AlertDialog.Builder(getContext())
-                        .setMessage(R.string.camera_confirmation)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        .setMessage(R.string.record_input_type)
+                        .setCancelable(true)
+                        .setPositiveButton(R.string.picture, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //begin process to taking a picture
+                            public void onClick(DialogInterface dialogInterface, int which) {
                                 dispatchTakePictureIntent();
-                                /*Intent intent = new Intent(MainActivity.this, PhotoActivity.class);
-                                startActivity(intent);
-                                */
+
+                            }
+                        })
+                        .setNeutralButton(R.string.record_in_storage, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //todo get picture from storage
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
                             }
                         })
                         .show();

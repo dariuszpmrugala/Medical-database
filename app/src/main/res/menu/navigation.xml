@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/navigation_home"
         android:icon="@drawable/ic_home_black_24dp"
-        android:title="@string/title_home" />
+        android:title="@string/title_home"
+        android:enabled="true"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/navigation_records"
         android:icon="@drawable/ic_archive_black_24dp"
-        android:title="@string/title_archive" />
+        android:title="@string/title_archive"
+        android:enabled="true"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/navigation_plots"
         android:icon="@drawable/ic_timeline_black_24dp"
-        android:title="@string/title_plots" />
+        android:title="@string/title_plots"
+        android:enabled="true"
+        app:showAsAction="ifRoom" />
 
 
 </menu>

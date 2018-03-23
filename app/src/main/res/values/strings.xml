@@ -4,13 +4,17 @@
     <string name="title_archive">Records Archive</string>
     <string name="title_plots">Plots</string>
     <string name="title_activity_login">Sign in</string>
+
+
+    <!-- Strings related to record input -->
     <string name="add_record_text">Add new Record</string>
     <string name="picture">Picture</string>
     <string name="description_info">Info</string>
     <string name="request_permission">This sample needs camera permission.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
     <string name="camera_message">Take a picture of your lab results or health record</string>
-    <string name="camera_confirmation">Would you like to take a picture of your record?</string>
+    <string name="record_input_type">How would you like to provide the record?</string>
+    <string name="record_in_storage">Pre-stored Record</string>
 
 
     <!-- Strings related to login -->
