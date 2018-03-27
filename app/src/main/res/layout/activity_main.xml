@@ -44,12 +44,9 @@
             app:itemIconTint="@drawable/bottom_nav_selector"
             app:itemTextColor="@drawable/bottom_nav_selector"
             app:menu="@menu/bottom_navigation_menu" />
-
-
+        
     </LinearLayout>
 
-
-    
     <FrameLayout
         android:id="@+id/fragmentLayout"
         android:layout_above="@+id/nav_layout"
