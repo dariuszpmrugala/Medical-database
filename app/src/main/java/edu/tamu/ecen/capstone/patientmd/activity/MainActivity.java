@@ -119,15 +119,18 @@ public class MainActivity extends AppCompatActivity {
             case R.id.navigation_home:
                 Log.d(TAG, "SelectFragment:: Home");
                 fragment = HomeFragment.newInstance(null);
+                item.setChecked(true);
                // mTextMessage.setText(R.string.title_home);
                 break;
             case R.id.navigation_records:
                 Log.d(TAG, "SelectFragment:: Records");
+                item.setChecked(true);
                 //fragment = RecordsFragment.newInstance();
                 //mTextMessage.setText(R.string.title_archive);
                 break;
             case R.id.navigation_plots:
                 Log.d(TAG, "SelectFragment:: Plots");
+                item.setChecked(true);
                 //fragment = PlotFragment.newInstance();
                 //mTextMessage.setText(R.string.title_plots);
                 break;
