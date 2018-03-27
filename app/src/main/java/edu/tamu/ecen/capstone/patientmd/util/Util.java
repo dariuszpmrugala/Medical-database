@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,11 +28,25 @@ public class Util {
         Returns a date using a long for system time in milliseconds
             To use this for current time, call with System.currentTimeMillis()
      */
+
+    private static String IMG_FILEPATH=null;
+    public static void setImgFilepath(String path) {
+        if(IMG_FILEPATH==null)
+            IMG_FILEPATH=path;
+    }
+    public static String getImgFilepath() {
+        return IMG_FILEPATH;
+    }
+
     public static String dateForFile(long time) {
         Date date = new Date(time);
         DateFormat formatter = new SimpleDateFormat("MM-dd-yy_HHmmss");
 
         return formatter.format(date);
+    }
+
+    public static long getFileSize(String filePath) {
+        return (new File(filePath)).length();
     }
 
     /*

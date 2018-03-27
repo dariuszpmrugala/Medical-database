@@ -1,7 +1,10 @@
 package edu.tamu.ecen.capstone.patientmd.util;
 
 
+import android.content.Context;
 import android.os.Environment;
+
+import java.io.File;
 
 /**
  * Created by reesul on 2/27/2018.
@@ -11,10 +14,15 @@ import android.os.Environment;
 public class Const {
 
     //File path to store images taken by this app
-    public static final String IMG_FILEPATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/patientMD";
+    public static String IMG_FILEPATH; //= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/patientMD";
 
     public static final int PERMISSION_CAMERA_CODE = 1;
     public static final int PERMISSION_READ_EXT_STORAGE_CODE = 2;
     public static final int PERMISSION_WRITE_EXT_STORAGE_CODE = 3;
+
+
+
+
+
 
 }

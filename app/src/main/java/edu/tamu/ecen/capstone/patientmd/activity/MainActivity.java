@@ -28,9 +28,9 @@ import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.HomeFragment;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.PlotFragment;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.RecordsFragment;
+import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
-import static edu.tamu.ecen.capstone.patientmd.util.Const.IMG_FILEPATH;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -83,10 +83,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate");
 
-        mTextMessage = (TextView) findViewById(R.id.message);
+        //mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        //initView();
+        initView();
+
+        //initialize the path that we save images to
+        Util.setImgFilepath(this.getFilesDir().getAbsolutePath()+"/patientMD/records");
+        new File(Util.getImgFilepath()).mkdirs();
 
 
         //get set of permissions from the user
@@ -97,26 +101,35 @@ public class MainActivity extends AppCompatActivity {
 */
     }
 
+    private void initView() {
+        Fragment homeFrag = HomeFragment.newInstance(null);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.container, homeFrag, homeFrag.getTag());
+        ft.commit();
+    }
 
 
     private boolean selectFragment(MenuItem item) {
         Fragment fragment = null;
 
-        Log.d(TAG, "SelectFragment::");
+
 
         //todo add all fragments here
         switch (item.getItemId()) {
             case R.id.navigation_home:
+                Log.d(TAG, "SelectFragment:: Home");
                 fragment = HomeFragment.newInstance(null);
-                mTextMessage.setText(R.string.title_home);
+               // mTextMessage.setText(R.string.title_home);
                 break;
             case R.id.navigation_records:
+                Log.d(TAG, "SelectFragment:: Records");
                 //fragment = RecordsFragment.newInstance();
-                mTextMessage.setText(R.string.title_archive);
+                //mTextMessage.setText(R.string.title_archive);
                 break;
             case R.id.navigation_plots:
+                Log.d(TAG, "SelectFragment:: Plots");
                 //fragment = PlotFragment.newInstance();
-                mTextMessage.setText(R.string.title_plots);
+                //mTextMessage.setText(R.string.title_plots);
                 break;
 
 

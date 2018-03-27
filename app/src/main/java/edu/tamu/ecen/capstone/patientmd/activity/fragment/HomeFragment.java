@@ -1,6 +1,7 @@
 package edu.tamu.ecen.capstone.patientmd.activity.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,7 +24,6 @@ import java.io.IOException;
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
-import static edu.tamu.ecen.capstone.patientmd.util.Const.IMG_FILEPATH;
 
 /**
  * Created by Reese on 3/21/2018.
@@ -76,8 +76,9 @@ public class HomeFragment extends Fragment {
                 }*/
 
                 //when the user clicks the button, they should be prompted to confirm they want to take a picture
-                new AlertDialog.Builder(getContext())
-                        .setMessage(R.string.record_input_type)
+                final Context context = getContext();
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setTitle(R.string.record_input_type);/*
                         .setCancelable(true)
                         .setPositiveButton(R.string.picture, new DialogInterface.OnClickListener() {
                             @Override
@@ -98,7 +99,31 @@ public class HomeFragment extends Fragment {
 
                             }
                         })
-                        .show();
+                        .show();    */
+                builder.setItems(new CharSequence[]
+                                {"Take a picture", "Select an existing File"},
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // The 'which' argument contains the index position
+                                // of the selected item
+                                switch (which) {
+                                    case 0:
+                                        Log.d(TAG, "Record Button:: take a picture");
+                                        dispatchTakePictureIntent();
+                                        break;
+                                    case 1:
+                                        Log.d(TAG, "Record Button:: use existing");
+                                        Toast.makeText(context, "clicked 'existing record'", Toast.LENGTH_SHORT).show();
+                                        break;
+                                }
+                            }
+                        }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                builder.show();
 
             }
         });
@@ -139,6 +164,8 @@ public class HomeFragment extends Fragment {
             int index = mCurrentPhotoPath.lastIndexOf("/");
             String toastMessage = mCurrentPhotoPath.substring(index+1, mCurrentPhotoPath.length());
             Log.d(TAG,"onActivityResult:: File: "+mCurrentPhotoPath);
+            Log.d(TAG,"onActivityResult:: Filesize: "+ (Util.getFileSize(mCurrentPhotoPath)) + " bytes");
+
             Toast.makeText(getActivity().getApplicationContext(), "Filename: "+toastMessage, Toast.LENGTH_LONG)
                     .show();
 
@@ -152,7 +179,7 @@ public class HomeFragment extends Fragment {
     private File createImageFile() throws IOException {
         // Create an image file name
         Util.permissionExternalWrite(getActivity());
-        String imageFileName = IMG_FILEPATH + "/" + Util.dateForFile(System.currentTimeMillis()) + ".jpg";
+        String imageFileName = Util.getImgFilepath() + "/" + Util.dateForFile(System.currentTimeMillis()) + ".jpg";
         File image = new File(imageFileName);
         image.getParentFile().mkdirs();
         image.createNewFile();
@@ -165,5 +192,7 @@ public class HomeFragment extends Fragment {
         Log.d(TAG, "CreateImageFile:: path is "+mCurrentPhotoPath);
         return image;
     }
+
+
 
 }

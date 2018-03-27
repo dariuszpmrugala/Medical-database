@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="patientMD" path="/DCIM/patientMD"/>
+    <files-path name="patientMD" path="patientMD/records"/>
 </paths>
