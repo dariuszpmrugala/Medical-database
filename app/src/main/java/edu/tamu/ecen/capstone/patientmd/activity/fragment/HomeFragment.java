@@ -114,6 +114,7 @@ public class HomeFragment extends Fragment {
                                     case 1:
                                         Log.d(TAG, "Record Button:: use existing");
                                         Toast.makeText(context, "clicked 'existing record'", Toast.LENGTH_SHORT).show();
+                                        getExistingImage();
                                         break;
                                 }
                             }
@@ -160,16 +161,23 @@ public class HomeFragment extends Fragment {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        //Handle the result of activity used for taking a picture
         if(requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
             int index = mCurrentPhotoPath.lastIndexOf("/");
             String toastMessage = mCurrentPhotoPath.substring(index+1, mCurrentPhotoPath.length());
-            Log.d(TAG,"onActivityResult:: File: "+mCurrentPhotoPath);
+            Log.d(TAG,"onActivityResult:: new Image file: "+mCurrentPhotoPath);
             Log.d(TAG,"onActivityResult:: Filesize: "+ (Util.getFileSize(mCurrentPhotoPath)) + " bytes");
 
             Toast.makeText(getActivity().getApplicationContext(), "Filename: "+toastMessage, Toast.LENGTH_LONG)
                     .show();
 
             //ToDo: anything that requires the picture as soon as it is taken
+        }
+
+        if(requestCode == REQUEST_EXISTING_IMAGE && resultCode == Activity.RESULT_OK) {
+            Uri uri = data.getData();
+            String filePath = MediaStore.Images.Media.DATA;
+            Log.d(TAG, "onActivityResult:: existing file at "+filePath);
         }
     }
 
@@ -178,6 +186,8 @@ public class HomeFragment extends Fragment {
 
     private File createImageFile() throws IOException {
         // Create an image file name
+
+        //todo necessary to get this permission?? SHould only need to read
         Util.permissionExternalWrite(getActivity());
         String imageFileName = Util.getImgFilepath() + "/" + Util.dateForFile(System.currentTimeMillis()) + ".jpg";
         File image = new File(imageFileName);
@@ -193,6 +203,18 @@ public class HomeFragment extends Fragment {
         return image;
     }
 
+    private int REQUEST_EXISTING_IMAGE = 1560;
+
+    private void getExistingImage() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+            startActivityForResult(intent, REQUEST_EXISTING_IMAGE);
+        } catch (Exception e) {
+            Log.e(TAG, "getExistingImage:: error", e);
+        }
+    }
 
 
 }
