@@ -6,8 +6,14 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,6 +34,7 @@ public class Util {
         Returns a date using a long for system time in milliseconds
             To use this for current time, call with System.currentTimeMillis()
      */
+    private static final String TAG = "Util:";
 
     private static String IMG_FILEPATH=null;
     public static void setImgFilepath(String path) {
@@ -91,6 +98,25 @@ public class Util {
             return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
         }
         else return true;
+    }
+
+    /*
+    Copy file from out location to another
+     */
+    public static void copyFile(File src, File dst) throws IOException {
+        Log.d(TAG, "CopyFile:: src has size in bytes: " + src.length());
+        try (InputStream in = new FileInputStream(src)) {
+            try (OutputStream out = new FileOutputStream(dst)) {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+
+                Log.d(TAG, "CopyFile:: dest has size in bytes: " + dst.length());
+            }
+        }
     }
 
 }

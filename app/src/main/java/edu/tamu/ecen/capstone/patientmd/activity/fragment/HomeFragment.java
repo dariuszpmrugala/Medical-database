@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -47,6 +48,13 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = getView();
+        if (view != null) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            if (parent != null) {
+                parent.removeView(view);
+            }
+        }
         return inflater.inflate(R.layout.home_fragment, container, false);
     }
 
@@ -56,6 +64,24 @@ public class HomeFragment extends Fragment {
 
         initView(view);
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy:: ");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.d(TAG, "onDetach:: ");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        //highlight relevant tab on nav menu
     }
 
     /*
@@ -78,30 +104,9 @@ public class HomeFragment extends Fragment {
                 //when the user clicks the button, they should be prompted to confirm they want to take a picture
                 final Context context = getContext();
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                        builder.setTitle(R.string.record_input_type);/*
-                        .setCancelable(true)
-                        .setPositiveButton(R.string.picture, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int which) {
-                                dispatchTakePictureIntent();
-
-                            }
-                        })
-                        .setNeutralButton(R.string.record_in_storage, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //todo get picture from storage
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                            }
-                        })
-                        .show();    */
+                builder.setTitle(R.string.record_input_type);
                 builder.setItems(new CharSequence[]
-                                {"Take a picture", "Select an existing File"},
+                                {"Take a picture", "Select an existing image", /*"Select other existing file"*/},
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // The 'which' argument contains the index position
@@ -112,10 +117,15 @@ public class HomeFragment extends Fragment {
                                         dispatchTakePictureIntent();
                                         break;
                                     case 1:
-                                        Log.d(TAG, "Record Button:: use existing");
-                                        Toast.makeText(context, "clicked 'existing record'", Toast.LENGTH_SHORT).show();
+                                        Log.d(TAG, "Record Button:: use image");
                                         getExistingImage();
                                         break;
+                                        /*  todo get file from other part of storage like pdf
+                                    case 2:
+                                        Log.d(TAG, "Record Button:: use existing file (other)");
+                                        getExistingFile();
+                                        break;
+                                        */
                                 }
                             }
                         }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -141,12 +151,7 @@ public class HomeFragment extends Fragment {
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             // Create the File where the photo should go
             File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-                Log.e(TAG, "dispatchTakePictureIntent:: error", ex);
-            }
+            photoFile = createImageFile();
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(getContext(),
@@ -175,30 +180,57 @@ public class HomeFragment extends Fragment {
         }
 
         if(requestCode == REQUEST_EXISTING_IMAGE && resultCode == Activity.RESULT_OK) {
+            //First get the filepath of the file we selected
             Uri uri = data.getData();
-            String filePath = MediaStore.Images.Media.DATA;
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+            Cursor cursor = getActivity().getContentResolver().query(uri,
+                    filePathColumn, null, null, null);
+            // Move to first row
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String filePath = cursor.getString(columnIndex);
             Log.d(TAG, "onActivityResult:: existing file at "+filePath);
+
+            //Now save a copy of the file into app storage
+            File dest = createImageFile();
+            File src = new File(filePath);
+            if(dest == null || src == null) {
+                Log.w(TAG, "Existing file:: null file");
+                return;
+            }
+            try {
+                Util.copyFile(src, dest);
+            } catch (IOException ex) {
+                Log.e(TAG, "Existing file:: error copying to "+filePath, ex);
+            }
+
         }
     }
 
 
     String mCurrentPhotoPath;
 
-    private File createImageFile() throws IOException {
+    private File createImageFile() {
         // Create an image file name
 
         //todo necessary to get this permission?? SHould only need to read
         Util.permissionExternalWrite(getActivity());
         String imageFileName = Util.getImgFilepath() + "/" + Util.dateForFile(System.currentTimeMillis()) + ".jpg";
-        File image = new File(imageFileName);
-        image.getParentFile().mkdirs();
-        image.createNewFile();
+        File image;
+        try {
+            image = new File(imageFileName);
+            image.getParentFile().mkdirs();
+            image.createNewFile();
 
-        if(image.exists())
-            Log.d(TAG,"createImageFile:: file created successfully");
+            if (image.exists())
+                Log.d(TAG, "createImageFile:: file created successfully");
 
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
+            // Save a file: path for use with ACTION_VIEW intents
+            mCurrentPhotoPath = image.getAbsolutePath();
+        } catch (IOException ex) {
+            Log.d(TAG, "CreateImageFile:: IOException", ex);
+            return null;
+        }
         Log.d(TAG, "CreateImageFile:: path is "+mCurrentPhotoPath);
         return image;
     }
@@ -215,6 +247,8 @@ public class HomeFragment extends Fragment {
             Log.e(TAG, "getExistingImage:: error", e);
         }
     }
+
+
 
 
 }
