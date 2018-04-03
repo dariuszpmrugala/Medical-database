@@ -6,8 +6,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.view.RecordAdapter;
 
 /**
  * Created by Reese on 3/21/2018.
@@ -34,11 +36,15 @@ public class RecordsFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        GridView gridView = (GridView) getActivity().findViewById(R.id.records_grid);
+        RecordAdapter adapter = new RecordAdapter(getContext());
+        gridView.setAdapter(adapter);
         //initView(view);
 
     }
 
     public static RecordsFragment newInstance() {
+
         return new RecordsFragment();
     }
 

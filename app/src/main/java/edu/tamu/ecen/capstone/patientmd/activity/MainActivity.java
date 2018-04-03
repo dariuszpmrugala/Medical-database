@@ -48,23 +48,6 @@ public class MainActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
             return selectFragment(item);
-
-            /*
-            switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    mTextMessage.setText(R.string.title_home);
-                    return true;
-                case R.id.navigation_records:
-                    mTextMessage.setText(R.string.title_archive);
-                    return true;
-                case R.id.navigation_plots:
-                    mTextMessage.setText(R.string.title_plots);
-                    return true;
-            }
-
-            Log.d(TAG, "NavigationMenuListener");
-            return false;
-            */
         }
     };
 
