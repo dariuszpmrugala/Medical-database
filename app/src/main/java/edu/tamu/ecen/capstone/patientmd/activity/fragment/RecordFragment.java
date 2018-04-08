@@ -10,12 +10,13 @@ import android.widget.GridView;
 
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.view.RecordAdapter;
+import edu.tamu.ecen.capstone.patientmd.view.RecordView;
 
 /**
  * Created by Reese on 3/21/2018.
  */
 
-public class RecordsFragment extends Fragment {
+public class RecordFragment extends Fragment {
     //TODO show all existing records here
     //  probably use a recycler view
 
@@ -37,16 +38,23 @@ public class RecordsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         GridView gridView = (GridView) getActivity().findViewById(R.id.records_grid);
-        RecordAdapter adapter = new RecordAdapter(getContext(), gridView.getWidth());
+        final RecordAdapter adapter = new RecordAdapter(getContext(), gridView.getWidth());
         gridView.setAdapter(adapter);
 
+        adapter.setEventListener(new RecordAdapter.RecordGridListener() {
+            @Override
+            public void onEvent() {
+                adapter.notifyDataSetChanged();
+            }
+        });
+
     }
 
-    public static RecordsFragment newInstance() {
+    public static RecordFragment newInstance() {
 
-        return new RecordsFragment();
+        return new RecordFragment();
     }
 
+    //todo use event listener from RecordView
 
-    //TODO make adapter and adapter list for showing the files in app storage
 }

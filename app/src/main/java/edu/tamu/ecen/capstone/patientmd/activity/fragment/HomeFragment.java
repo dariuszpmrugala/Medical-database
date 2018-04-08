@@ -88,7 +88,7 @@ public class HomeFragment extends Fragment {
     Function sets the initial view whenever the app is opened
      */
     private void initView(View view) {
-        Log.d(TAG, "initView");
+        Log.d(TAG, "initRecordView");
         //setup the button for accessing the camera
         cameraButton = (Button) view.findViewById(R.id.new_record_button);
         cameraButton.setOnClickListener(new View.OnClickListener() {

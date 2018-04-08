@@ -1,23 +1,25 @@
 package edu.tamu.ecen.capstone.patientmd.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
@@ -32,8 +34,7 @@ public class RecordAdapter extends BaseAdapter {
 
     private Context mContext;
     private File[] recordsList;
-    private int maxHeight=0;
-    private int maxWidth=0;
+    private RecordGridListener mListener;
 
     public RecordAdapter(Context c, int columnWidth) {
         mContext = c;
@@ -49,8 +50,7 @@ public class RecordAdapter extends BaseAdapter {
             }
         };
         recordsList = dir.listFiles(filter);
-        setHeight();
-        maxWidth = columnWidth;
+        //recordsList = removeDuplicateRecords(dir.listFiles(filter));
         Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.length + " images for gridview");
     }
 
@@ -67,7 +67,7 @@ public class RecordAdapter extends BaseAdapter {
     }
 
     //TODO use this when transitions between fragments is smoother and has memory
-    public void updateRecordsList(Context context) {
+    private void updateRecordsList(Context context) {
         File dir = new File(Util.getImgFilepath());
         FileFilter filter = new FileFilter() {
             @Override
@@ -78,80 +78,167 @@ public class RecordAdapter extends BaseAdapter {
             }
         };
         recordsList = dir.listFiles(filter);
-        Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.length + " images for gridview");
+        //recordsList = removeDuplicateRecords(dir.listFiles(filter));
+        Log.d(TAG, "updateRecordsList:: " + recordsList.length + " images for gridview");
+    }
+
+    /*
+    make sure we don't have images showing up multiple times; MAY NOT NEED THIS FUNCTION
+
+     */
+    private File[] removeDuplicateRecords(File[] filesArray) {
+        ArrayList<File> filesList= new ArrayList<File>();
+        for (File file: filesArray) {
+            if(!filesList.contains(file))
+                filesList.add(file);
+        }
+        return (File []) filesList.toArray();
+    }
+
+    /*
+    todo sort records list alphabetically
+     */
+    private void sortRecordsList() {
+
     }
 
     // create a new ImageView for each item referenced by the Adapter
-    //todo make this more efficient by using a custom view and view holder (??)
+    //todo make this more efficient by using a custom view and view holder (??), and maybe bitmaps on an another thread
     public View getView(int position, View convertView, ViewGroup parent) {
-        RelativeLayout grid_item;
-        if (convertView == null) {
-            Log.d(TAG, "getView:: on item "+position);
-            final LayoutInflater inflater = LayoutInflater.from(mContext);
-            grid_item = (RelativeLayout) inflater.inflate(R.layout.record_image_layout, null);
+
+        RecordView recordView = new RecordView(mContext);
+        RelativeLayout grid_item =  recordView.initRecordView((File) getItem(position), convertView, parent);
 
 
-            int width = Util.getDeviceWidth()/2;
-            int height  = (int) (Util.getDeviceHeight()/2.7);
-            GridView.LayoutParams params = new GridView.LayoutParams(width,height);
-            //need to make sure height is the same across grid items so scrolling works
-            Log.d(TAG, "getView:: parent height is " +params.height);
-            grid_item.setLayoutParams(params);
 
-            ImageView imageView = (ImageView) grid_item.findViewById(R.id.imageview_record_image);
-            TextView textView = (TextView) grid_item.findViewById(R.id.textview_filename);
-            ImageButton optionsButton = (ImageButton) grid_item.findViewById(R.id.record_info_button);
-
-            File imgFile = recordsList[position];
-            if(imgFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                if(bitmap!=null) {
-                    imageView.setImageBitmap(bitmap);
-                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    textView.setText(Util.getLastPathComponent(imgFile));
-
-                    optionsButton.setOnClickListener(buttonClick);
-                    optionsButton.setTag(imgFile);
-                }
-
-                grid_item.setLayoutParams(params);
+        recordView.setEventListener(new RecordView.RecordViewListener() {
+            @Override
+            public void onEvent() {
+                //call to update may not be necessary..
+                updateRecordsList(mContext);
+                onRecordViewChanged();
             }
+        });
 
-             /*
-            imageView.setLayoutParams(new ViewGroup.LayoutParams(85, 85));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(8, 8, 8, 8);
-            imageView.setAdjustViewBounds(true);
-            */
-        } else {
-            grid_item = (RelativeLayout) convertView;
-        }
+
         return grid_item;
-    }
 
-    private void setHeight() {
-        for (File image : recordsList) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-
-//Returns null, sizes are in the options variable
-            BitmapFactory.decodeFile(image.getAbsolutePath(), options);
-            int height = options.outHeight;
-
-            if(height>maxHeight) maxHeight = height;
-
-        }
     }
 
 
     //todo implement onClick, uses a dropdown menu, containing options: rename, delete, share/export
-    View.OnClickListener buttonClick = new View.OnClickListener() {
+    private View.OnClickListener buttonClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             //todo make dropdown menu, manipulate file from there: delete, rename, share, view
-            File img = (File) v.getTag();
-            Toast.makeText(v.getContext(), "Filename: "+img.getAbsolutePath(), Toast.LENGTH_LONG)
-                    .show();
+            //File img = (File) v.getTag();
+
+
+            Context context = v.getContext();
+            PopupMenu recordMenu = new PopupMenu(context, v);
+            MenuInflater menuInflater = recordMenu.getMenuInflater();
+            menuInflater.inflate(R.menu.record_image_menu, recordMenu.getMenu());
+            recordMenu.setOnMenuItemClickListener(recordMenuListener);
+
+            recordMenu.show();
+
         }
     };
+
+
+    private PopupMenu.OnMenuItemClickListener recordMenuListener = new PopupMenu.OnMenuItemClickListener() {
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+
+        Log.d(TAG, "RecordMenu:: onClick");
+
+        //need to get the file
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        if (info == null) {
+            Log.d(TAG, "onClick:: null menu info");
+            return false;
+        }
+        final File selectedImage = (File) getItem(info.position);
+
+
+        Log.d(TAG, "onMenuItemClick:: file is " + selectedImage.getAbsolutePath());
+
+
+
+        switch (item.getItemId()) {
+            case R.id.record_view:
+                //todo show the image; use an intent to show in gallery(?) so they can get a better look i.e. zooming in
+                break;
+            case R.id.record_rename:
+                //todo show current file name in line, text here will replace name of file
+                break;
+            case R.id.record_share:
+                //todo create a share intent?
+                break;
+
+            case R.id.record_delete:
+                // todo delete the file, update the adapter
+                //give alertdialog for confirmation
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setMessage(R.string.record_delete_confirmation);
+                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String msg = Util.getLastPathComponent(selectedImage);
+                                if(selectedImage.delete()) {
+
+                                    Toast.makeText(mContext, msg+" deleted", Toast.LENGTH_LONG)
+                                            .show();
+                                }
+                                else
+                                    Log.d(TAG, "Failed to delete " + msg);
+                            }
+                        });
+                builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                builder.show();
+                break;
+
+            default:
+                break;
+
+
+            }
+        return false;
+        }
+
+    };
+
+    public interface RecordGridListener {
+        public void onEvent();
+    }
+
+    public void setEventListener(RecordGridListener listener) {
+        this.mListener = listener;
+    }
+
+    private void onRecordViewChanged() {
+        Log.d(TAG, "onRecordViewChanged");
+        if(mListener!=null) {
+            mListener.onEvent();
+        }
+    }
+
+    private class ViewHolder {
+        public TextView text;
+        public ImageView image;
+        public ImageButton options;
+
+        public ViewHolder(View convertView) {
+            text = convertView.findViewById(R.id.record_text_filename);
+            image = convertView.findViewById(R.id.record_image);
+            options = convertView.findViewById(R.id.record_info_button);
+        }
+    }
+
+
 }

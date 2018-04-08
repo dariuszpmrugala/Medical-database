@@ -18,8 +18,7 @@ import java.io.File;
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.HomeFragment;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.PlotFragment;
-import edu.tamu.ecen.capstone.patientmd.activity.fragment.RecordsFragment;
-import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
+import edu.tamu.ecen.capstone.patientmd.activity.fragment.RecordFragment;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 
@@ -118,9 +117,9 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.navigation_records:
                     Log.d(TAG, "SelectFragment:: Records");
                     item.setChecked(true);
-                    fragment = RecordsFragment.newInstance();
+                    fragment = RecordFragment.newInstance();
                     viewId = R.layout.record_fragment_layout;
-                    tag = "RecordsFragment";
+                    tag = "RecordFragment";
                     //mTextMessage.setText(R.string.title_archive);
                     break;
                 case R.id.navigation_plots:

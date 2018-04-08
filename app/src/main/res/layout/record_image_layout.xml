@@ -1,8 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/record_image_layout">
+    android:layout_height="match_parent">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -30,7 +29,7 @@
         android:background="@color/grey_background">
 
         <TextView
-            android:id="@+id/textview_filename"
+            android:id="@+id/record_text_filename"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignEnd="@id/record_info_button"
@@ -51,7 +50,7 @@
             android:layout_alignParentTop="true"
             android:layout_gravity="bottom|end"
             android:contentDescription="@string/record_image_menu_description"
-            android:src="@drawable/ic_more_vert" />
+            android:src="@drawable/ic_more_vert"/>
 
 
     </RelativeLayout>

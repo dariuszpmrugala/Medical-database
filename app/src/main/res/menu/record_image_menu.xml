@@ -10,10 +10,15 @@
         android:enabled="true"
         app:showAsAction="ifRoom"/>
     -->
+    <item
+        android:id="@+id/record_view"
+        android:title="@string/record_view"
+        android:enabled="true"
+        app:showAsAction="never"/>
 
     <item
-        android:id="@+id/record_delete"
-        android:title="@string/record_delete"
+        android:id="@+id/record_share"
+        android:title="@string/record_share"
         android:enabled="true"
         app:showAsAction="never"/>
 
@@ -22,5 +27,12 @@
         android:title="@string/record_rename"
         android:enabled="true"
         app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/record_delete"
+        android:title="@string/record_delete"
+        android:enabled="true"
+        app:showAsAction="never"/>
+
 
 </menu>
