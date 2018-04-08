@@ -58,7 +58,7 @@ public class RecordView extends View {
         if(convertView==null) {
             Log.d(TAG, "initRecordView:: " + Util.getLastPathComponent(record));
             final LayoutInflater inflater = LayoutInflater.from(mContext);
-            grid_item = (RelativeLayout) inflater.inflate(R.layout.record_image_layout, null);
+            grid_item = (RelativeLayout) inflater.inflate(R.layout.record_image_layout, parent, false);
 
 
             int width = Util.getDeviceWidth() / 2;
