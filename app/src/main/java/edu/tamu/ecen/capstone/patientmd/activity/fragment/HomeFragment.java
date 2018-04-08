@@ -194,7 +194,7 @@ public class HomeFragment extends Fragment {
             //Now save a copy of the file into app storage
             File dest = createImageFile();
             File src = new File(filePath);
-            if(dest == null || src == null) {
+            if(dest == null || src.length()==0) {
                 Log.w(TAG, "Existing file:: null file");
                 return;
             }

@@ -2,11 +2,16 @@ package edu.tamu.ecen.capstone.patientmd.util;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +41,32 @@ public class Util {
      */
     private static final String TAG = "Util:";
 
+
+
+    private static int DEVICE_HEIGHT;
+    private static int DEVICE_WIDTH;
+
+    public static void setDeviceDimensions(Context context) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context.getSystemService(Service.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        Point point = new Point();
+        display.getRealSize(point);
+        DEVICE_HEIGHT = point.y;
+        DEVICE_WIDTH = point.x;
+    }
+    public static int getDeviceHeight() {
+        return DEVICE_HEIGHT;
+    }
+
+    public static int getDeviceWidth() {
+        return DEVICE_WIDTH;
+    }
+
+
+    /* Filepath to containing all images for this app */
     private static String IMG_FILEPATH=null;
+
     public static void setImgFilepath(String path) {
         if(IMG_FILEPATH==null)
             IMG_FILEPATH=path;
@@ -117,6 +147,15 @@ public class Util {
                 Log.d(TAG, "CopyFile:: dest has size in bytes: " + dst.length());
             }
         }
+    }
+
+    public static String getLastPathComponent(File file) {
+        String[] segments = file.getAbsolutePath().split("/");
+        if (segments.length == 0)
+            return "";
+        String lastPathComponent = segments[segments.length - 1];
+        Log.d(TAG, "getLastPathComponent: " + lastPathComponent);
+        return lastPathComponent;
     }
 
 }

@@ -8,12 +8,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FilenameFilter;
 
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
@@ -28,8 +32,10 @@ public class RecordAdapter extends BaseAdapter {
 
     private Context mContext;
     private File[] recordsList;
+    private int maxHeight=0;
+    private int maxWidth=0;
 
-    public RecordAdapter(Context c) {
+    public RecordAdapter(Context c, int columnWidth) {
         mContext = c;
         File dir = new File(Util.getImgFilepath());
         FileFilter filter = new FileFilter() {
@@ -37,10 +43,14 @@ public class RecordAdapter extends BaseAdapter {
             public boolean accept(File pathname) {
                 String path = pathname.getPath();
                 boolean accept = path.contains(".jpg") || path.contains(".jpeg") || path.contains(".png");
+                accept = accept && pathname.length()!=0;
+
                 return accept;
             }
         };
         recordsList = dir.listFiles(filter);
+        setHeight();
+        maxWidth = columnWidth;
         Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.length + " images for gridview");
     }
 
@@ -56,6 +66,7 @@ public class RecordAdapter extends BaseAdapter {
         return 0;
     }
 
+    //TODO use this when transitions between fragments is smoother and has memory
     public void updateRecordsList(Context context) {
         File dir = new File(Util.getImgFilepath());
         FileFilter filter = new FileFilter() {
@@ -71,15 +82,40 @@ public class RecordAdapter extends BaseAdapter {
     }
 
     // create a new ImageView for each item referenced by the Adapter
+    //todo make this more efficient by using a custom view and view holder (??)
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView imageView;
+        RelativeLayout grid_item;
         if (convertView == null) {
+            Log.d(TAG, "getView:: on item "+position);
             final LayoutInflater inflater = LayoutInflater.from(mContext);
-            //root should be parent??
-            convertView = inflater.inflate(R.layout.record_image_layout, null);
+            grid_item = (RelativeLayout) inflater.inflate(R.layout.record_image_layout, null);
 
-            // if it's not recycled, initialize some attributes
 
+            int width = Util.getDeviceWidth()/2;
+            int height  = (int) (Util.getDeviceHeight()/2.7);
+            GridView.LayoutParams params = new GridView.LayoutParams(width,height);
+            //need to make sure height is the same across grid items so scrolling works
+            Log.d(TAG, "getView:: parent height is " +params.height);
+            grid_item.setLayoutParams(params);
+
+            ImageView imageView = (ImageView) grid_item.findViewById(R.id.imageview_record_image);
+            TextView textView = (TextView) grid_item.findViewById(R.id.textview_filename);
+            ImageButton optionsButton = (ImageButton) grid_item.findViewById(R.id.record_info_button);
+
+            File imgFile = recordsList[position];
+            if(imgFile.exists()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                if(bitmap!=null) {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    textView.setText(Util.getLastPathComponent(imgFile));
+
+                    optionsButton.setOnClickListener(buttonClick);
+                    optionsButton.setTag(imgFile);
+                }
+
+                grid_item.setLayoutParams(params);
+            }
 
              /*
             imageView.setLayoutParams(new ViewGroup.LayoutParams(85, 85));
@@ -88,29 +124,34 @@ public class RecordAdapter extends BaseAdapter {
             imageView.setAdjustViewBounds(true);
             */
         } else {
+            grid_item = (RelativeLayout) convertView;
         }
-
-        //setup the image view here with an image taken from the file
-        imageView = convertView.findViewById(R.id.imageview_record_image);
-        TextView textView = (TextView) convertView.findViewById(R.id.textview_filename);
-
-        File imgFile = recordsList[position];
-        Log.d(TAG, "getView:: filename: " + imgFile.getPath());
-        if(imgFile.exists()) {
-            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-            if(bitmap==null) {//set blank image here, do not set text
-                imageView.setImageDrawable(mContext.getDrawable(R.drawable.ic_action_info));
-                textView.setText("Empty image file");
-            }
-
-            else {
-                imageView.setImageBitmap(bitmap);
-                textView.setText(imgFile.getPath());
-            }
-        }
-        //imageView.setImageResource(recordsList[position]);
-        return convertView;
+        return grid_item;
     }
 
-    //todo implement onClick
+    private void setHeight() {
+        for (File image : recordsList) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+
+//Returns null, sizes are in the options variable
+            BitmapFactory.decodeFile(image.getAbsolutePath(), options);
+            int height = options.outHeight;
+
+            if(height>maxHeight) maxHeight = height;
+
+        }
+    }
+
+
+    //todo implement onClick, uses a dropdown menu, containing options: rename, delete, share/export
+    View.OnClickListener buttonClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //todo make dropdown menu, manipulate file from there: delete, rename, share, view
+            File img = (File) v.getTag();
+            Toast.makeText(v.getContext(), "Filename: "+img.getAbsolutePath(), Toast.LENGTH_LONG)
+                    .show();
+        }
+    };
 }

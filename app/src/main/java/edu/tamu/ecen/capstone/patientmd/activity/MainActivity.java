@@ -19,6 +19,7 @@ import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.HomeFragment;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.PlotFragment;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.RecordsFragment;
+import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private Button cameraButton;
 
     private FragmentManager fragmentManager;
+    private Fragment currentFragment;
 
 
     //todo use a selector to make the icons change
@@ -58,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate");
 
-        //mTextMessage = (TextView) findViewById(R.id.message);
+        Util.setDeviceDimensions(this);
+
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         initView();
@@ -67,13 +70,9 @@ public class MainActivity extends AppCompatActivity {
         Util.setImgFilepath(this.getFilesDir().getAbsolutePath()+"/patientMD/records");
         new File(Util.getImgFilepath()).mkdirs();
 
+        //todo get dropbox working;
+        //FileUtil.initDropbox();
 
-        //get set of permissions from the user
-        /*Fragment homeFrag = HomeFragment.newInstance(null);
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.add(R.id.container, homeFrag, homeFrag.getTag());
-        ft.commit();
-*/
     }
 
     /*
@@ -145,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean startFragment(Fragment fragment, String tag) {
-        if(fragment != null) {
+        if(fragment != null || fragment==currentFragment) {
 
 
             FragmentTransaction ft = fragmentManager.beginTransaction();
@@ -155,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
             ft.addToBackStack(null);
             ft.show(fragment);
             ft.commit();
+            currentFragment=fragment;
             return true;
         }
 

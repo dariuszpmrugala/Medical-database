@@ -37,9 +37,8 @@ public class RecordsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         GridView gridView = (GridView) getActivity().findViewById(R.id.records_grid);
-        RecordAdapter adapter = new RecordAdapter(getContext());
+        RecordAdapter adapter = new RecordAdapter(getContext(), gridView.getWidth());
         gridView.setAdapter(adapter);
-        //initView(view);
 
     }
 

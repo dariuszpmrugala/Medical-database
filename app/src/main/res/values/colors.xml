@@ -7,5 +7,6 @@
     <color name="bottom_color_secondary">#99bde4</color>
     <color name="bottom_color_background">#fafafa</color>
     <color name="control_background">#cc4285f4</color>
+    <color name="grey_background">#eeeeee</color>
 
 </resources>
