@@ -4,10 +4,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
@@ -17,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -32,11 +29,12 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
-import static android.content.ContentValues.TAG;
 import static edu.tamu.ecen.capstone.patientmd.util.Const.RECORD_VIEW_SCALE;
 
 /**
@@ -46,11 +44,21 @@ import static edu.tamu.ecen.capstone.patientmd.util.Const.RECORD_VIEW_SCALE;
 public class RecordAdapter extends BaseAdapter {
 
     private Context mContext;
-    private File[] recordsList;
-    private RecordGridListener mListener;
+    private ArrayList<File> recordsList;
+    private RecordAdapterListener mListener;
+
+    private final String TAG = "RecordAdapter";
 
     public RecordAdapter(Context c, int columnWidth) {
         mContext = c;
+
+
+        recordsList = new ArrayList<>(Arrays.asList(getFilesInDir()));
+        //recordsList = removeDuplicateRecords(dir.listFiles(filter));
+        Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.size() + " images for gridview");
+    }
+
+    private File[] getFilesInDir() {
         File dir = new File(Util.getImgFilepath());
         FileFilter filter = new FileFilter() {
             @Override
@@ -62,63 +70,59 @@ public class RecordAdapter extends BaseAdapter {
                 return accept;
             }
         };
-        recordsList = dir.listFiles(filter);
-        //recordsList = removeDuplicateRecords(dir.listFiles(filter));
-        Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.length + " images for gridview");
+
+        return dir.listFiles(filter);
     }
 
     public int getCount() {
-        return recordsList.length;
+        return recordsList.size();
     }
 
     public Object getItem(int position) {
-        return recordsList[position];
+        return recordsList.get(position);
     }
 
     public long getItemId(int position) {
         return 0;
     }
 
-    //TODO use this when transitions between fragments is smoother and has memory
-    private void updateRecordsList(Context context) {
+    private void updateRecordsList() {
+        addNewRecords();
+        removeOldRecords();
+        onRecordDataChanged();
+
+        Log.d(TAG, "updateRecordsList:: " + recordsList.size() + " images for gridview");
+    }
+
+    private void addNewRecords() {
         File dir = new File(Util.getImgFilepath());
-        FileFilter filter = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                String path = pathname.getPath();
-                boolean accept = path.contains(".jpg") || path.contains(".jpeg") || path.contains(".png");
-                return accept;
+
+        File[] records = getFilesInDir();
+        for(File file : records) {
+            if (!recordsList.contains(file)) {
+                recordsList.add(file);
             }
-        };
-        recordsList = dir.listFiles(filter);
-        //recordsList = removeDuplicateRecords(dir.listFiles(filter));
-        Log.d(TAG, "updateRecordsList:: " + recordsList.length + " images for gridview");
-    }
-
-    /*
-    make sure we don't have images showing up multiple times; MAY NOT NEED THIS FUNCTION
-
-     */
-    private File[] removeDuplicateRecords(File[] filesArray) {
-        ArrayList<File> filesList= new ArrayList<File>();
-        for (File file: filesArray) {
-            if(!filesList.contains(file))
-                filesList.add(file);
         }
-        return (File []) filesList.toArray();
     }
 
-    /*
-    todo sort records list alphabetically
-     */
-    private void sortRecordsList() {
+    private void removeOldRecords() {
+        File[] dir = getFilesInDir();
 
+        //need to find files that are still in the record list, but are no longer present in file system
+        for (Iterator<File> iterator = recordsList.iterator(); iterator.hasNext(); ) {
+            File recordFile = iterator.next();
+            boolean remove = true;
+            for (File realFile: dir) {
+                if (realFile.getAbsolutePath().equals(recordFile.getAbsolutePath())) {
+                    remove = false;
+                }
+            }
+            if (remove) iterator.remove();
+        }
     }
-
 
 
     // create a new ImageView for each item referenced by the Adapter
-    //todo make this more efficient by using a custom view and view holder (??), and maybe bitmaps on an another thread
     public View getView(int position, View convertView, ViewGroup parent) {
 
         //RecordView recordView = new RecordView(mContext);
@@ -153,7 +157,6 @@ public class RecordAdapter extends BaseAdapter {
         if(bitmap!=null) {
 
             viewHolder.image.setImageBitmap(bitmap);
-
             viewHolder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
 
@@ -169,7 +172,7 @@ public class RecordAdapter extends BaseAdapter {
             public void onEvent() {
                 //call to update may not be necessary..
                 updateRecordsList(mContext);
-                onRecordViewChanged();
+                onRecordDataChanged();
             }
         });
 */
@@ -179,11 +182,9 @@ public class RecordAdapter extends BaseAdapter {
     }
 
 
-    //todo implement onClick, uses a dropdown menu, containing options: rename, delete, share/export
     private View.OnClickListener buttonClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            //todo make dropdown menu, manipulate file from there: delete, rename, share, view
             File img = (File) v.getTag();
 
 
@@ -217,15 +218,14 @@ public class RecordAdapter extends BaseAdapter {
                 case R.id.record_view:
                     try {
                         Log.d(TAG, "View record: "+record.getAbsolutePath());
-                        Intent viewIntent = new Intent(Intent.ACTION_VIEW);
-                        //viewIntent.setDataAndType(Uri.parse("file://"+record.getPath()), "image/*");
+                        //get file to view
                         Uri recordUri = FileProvider.getUriForFile(mContext,
                                 "edu.tamu.ecen.capstone.input.fileprovider",
                                 record);
-                        //File x = new File("/storage/emulated/0/DCIM/Camera/IMG_20170821_130658");
+
+                        //create an intent so this opens in another app
+                        Intent viewIntent = new Intent(Intent.ACTION_VIEW);
                         viewIntent.setDataAndType(recordUri, "image/*");
-                        //viewIntent.setDataAndType(Uri.fromFile(record), "image/*");
-                        //viewIntent.putExtra(MediaStore.EXTRA_OUTPUT, recordUri);
                         viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                         viewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         mContext.startActivity(viewIntent);
@@ -249,7 +249,7 @@ public class RecordAdapter extends BaseAdapter {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             //in this case, we need to rename the existing file
-                            String fileExtension = Util.getLastPathComponent(record);
+                            String fileExtension = record.getName();
                             fileExtension = fileExtension.substring(fileExtension.lastIndexOf("."));
                             String newName = input.getText().toString();
                             newName = Util.getImgFilepath()+"/"+newName+fileExtension;
@@ -262,6 +262,8 @@ public class RecordAdapter extends BaseAdapter {
                                 record = renamedFile;
 
                                 AsyncTask.execute(Util.runnableUpdateTable);
+                                updateRecordsList();
+
                             }
 
                         }
@@ -273,6 +275,9 @@ public class RecordAdapter extends BaseAdapter {
                         }
                     });
                     builderRename.show();
+
+
+
 
                     break;
 
@@ -291,18 +296,18 @@ public class RecordAdapter extends BaseAdapter {
                     break;
 
                 case R.id.record_delete:
-                    // todo delete the file, update the adapter
                     //give alertdialog for confirmation
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setMessage(R.string.record_delete_confirmation);
                     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            String msg = Util.getLastPathComponent(record);
+                            String msg = record.getName();
                             if(record.delete()) {
 
                                 Toast.makeText(mContext, msg+" deleted", Toast.LENGTH_LONG)
                                         .show();
+                                updateRecordsList();
                             }
                             else
                                 Log.d(TAG, "Failed to delete " + msg);
@@ -327,16 +332,16 @@ public class RecordAdapter extends BaseAdapter {
     }
 
 
-    public interface RecordGridListener {
+    public interface RecordAdapterListener {
         public void onEvent();
     }
 
-    public void setEventListener(RecordGridListener listener) {
+    public void setEventListener(RecordAdapterListener listener) {
         this.mListener = listener;
     }
 
-    private void onRecordViewChanged() {
-        Log.d(TAG, "onRecordViewChanged");
+    private void onRecordDataChanged() {
+        Log.d(TAG, "onRecordDataChanged");
         if(mListener!=null) {
             mListener.onEvent();
         }
@@ -356,9 +361,6 @@ public class RecordAdapter extends BaseAdapter {
             options = (ImageButton) view.findViewById(R.id.record_info_button);
         }
     }
-
-
-
 
 
 
