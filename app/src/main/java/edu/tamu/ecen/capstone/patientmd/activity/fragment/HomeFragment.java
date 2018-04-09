@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -177,6 +178,7 @@ public class HomeFragment extends Fragment {
                     .show();
 
             //ToDo: anything that requires the picture as soon as it is taken
+            AsyncTask.execute(Util.runnableUpdateTable);
         }
 
         if(requestCode == REQUEST_EXISTING_IMAGE && resultCode == Activity.RESULT_OK) {
@@ -203,6 +205,8 @@ public class HomeFragment extends Fragment {
             } catch (IOException ex) {
                 Log.e(TAG, "Existing file:: error copying to "+filePath, ex);
             }
+            //TODO anything that requires updating due to new record
+            AsyncTask.execute(Util.runnableUpdateTable);
 
         }
     }
@@ -213,8 +217,8 @@ public class HomeFragment extends Fragment {
     private File createImageFile() {
         // Create an image file name
 
-        //todo necessary to get this permission?? SHould only need to read
-        Util.permissionExternalWrite(getActivity());
+        //todo necessary to get this permission?? Should only need to read
+        //Util.permissionExternalWrite(getActivity());
         String imageFileName = Util.getImgFilepath() + "/" + Util.dateForFile(System.currentTimeMillis()) + ".jpg";
         File image;
         try {
@@ -238,6 +242,7 @@ public class HomeFragment extends Fragment {
     private int REQUEST_EXISTING_IMAGE = 1560;
 
     private void getExistingImage() {
+        Util.permissionExternalRead(getActivity());
         try {
             Intent intent = new Intent(Intent.ACTION_PICK,
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI);

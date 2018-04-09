@@ -1,6 +1,8 @@
 package edu.tamu.ecen.capstone.patientmd.activity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -68,6 +70,14 @@ public class MainActivity extends AppCompatActivity {
         //initialize the path that we save images to
         Util.setImgFilepath(this.getFilesDir().getAbsolutePath()+"/patientMD/records");
         new File(Util.getImgFilepath()).mkdirs();
+        //instantiate a table to create a table for the bitmaps; should be easier to access in the future
+        AsyncTask.execute(new Runnable(){
+            @Override
+            public void run(){
+                Util.initRecordTable();
+            }
+        });
+
 
         //todo get dropbox working;
         //FileUtil.initDropbox();

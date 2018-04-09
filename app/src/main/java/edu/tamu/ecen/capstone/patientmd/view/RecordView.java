@@ -56,7 +56,7 @@ public class RecordView extends View {
         recordPath = this.record.getAbsolutePath();
 
         if(convertView==null) {
-            Log.d(TAG, "initRecordView:: " + Util.getLastPathComponent(record));
+            Log.d(TAG, "initRecordView:: " + record.getName());
             final LayoutInflater inflater = LayoutInflater.from(mContext);
             grid_item = (RelativeLayout) inflater.inflate(R.layout.record_image_layout, parent, false);
 

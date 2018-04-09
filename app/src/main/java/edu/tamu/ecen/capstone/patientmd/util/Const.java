@@ -20,6 +20,8 @@ public class Const {
     public static final int PERMISSION_READ_EXT_STORAGE_CODE = 2;
     public static final int PERMISSION_WRITE_EXT_STORAGE_CODE = 3;
 
+    public static final double RECORD_VIEW_SCALE = 2.5;
+
 
 
 

@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,9 +24,9 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 
-import edu.tamu.ecen.capstone.patientmd.util.Const;
-
+import static edu.tamu.ecen.capstone.patientmd.util.Const.RECORD_VIEW_SCALE;
 
 
 /**
@@ -41,10 +43,11 @@ public class Util {
      */
     private static final String TAG = "Util:";
 
-
-
     private static int DEVICE_HEIGHT;
     private static int DEVICE_WIDTH;
+
+
+    public static Hashtable<String, Bitmap> recordImageTable;
 
     public static void setDeviceDimensions(Context context) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -156,6 +159,60 @@ public class Util {
         String lastPathComponent = segments[segments.length - 1];
         Log.d(TAG, "getLastPathComponent: " + lastPathComponent);
         return lastPathComponent;
+    }
+
+    /*
+    Run this in a background thread
+     */
+    public static void initRecordTable() {
+        File[] allImages = (new File(getImgFilepath())).listFiles();
+        recordImageTable = new Hashtable<>(allImages.length);
+
+        updateRecordTable();
+    }
+
+    public static void updateRecordTable() {
+        File[] allImages = (new File(getImgFilepath())).listFiles();
+
+        for (File image : allImages) {
+            String fileName = image.getName();
+            Log.d(TAG, "updateRecordTable: file name is "+fileName);
+            if (!(fileName.contains(".jpg") || fileName.contains(".jpeg") || fileName.contains(".png")))
+                continue;
+
+            //if key does not exist within the bitmap, put a new one in
+            if(!recordImageTable.containsKey(fileName)) {
+                try {
+                    Bitmap bm = BitmapFactory.decodeFile(image.getAbsolutePath());
+                    if (bm!=null) {
+                        bm = Bitmap.createScaledBitmap(bm, Util.DEVICE_WIDTH / 2,
+                                (int) (Util.getDeviceHeight() / RECORD_VIEW_SCALE), true);
+                        recordImageTable.put(fileName, bm);
+                    }
+                    else    //in this case, bitmap is null and the file is bad... delete it.
+                        image.delete();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error Updating Record Table",e);
+                }
+
+
+            }
+        }
+    }
+
+    public static Runnable runnableUpdateTable = new Runnable() {
+        @Override
+        public void run() {
+            Util.updateRecordTable();
+        }
+    };
+
+    public static void replaceInTable(String old, String newer) {
+        Bitmap bm = recordImageTable.get(old);
+        if(bm!=null) {
+            recordImageTable.remove(old);
+            recordImageTable.put(newer, bm);
+        }
     }
 
 
