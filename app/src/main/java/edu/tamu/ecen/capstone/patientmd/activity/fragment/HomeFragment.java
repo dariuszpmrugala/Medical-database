@@ -46,6 +46,9 @@ public class HomeFragment extends Fragment {
         return frag;
     }
 
+    /*
+    Handles the view whenever the fragment is created
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -97,12 +100,8 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 Log.d(TAG, "CameraButton: onClick");
 
-                /*
-                if (MainActivity.this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "CameraButton: User must provide storage write access");
-                }*/
 
-                //when the user clicks the button, they should be prompted to confirm they want to take a picture
+                //when the user clicks the button, they are prompted with how they want to provide a new record
                 final Context context = getContext();
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle(R.string.record_input_type);
@@ -129,11 +128,12 @@ public class HomeFragment extends Fragment {
                                         */
                                 }
                             }
-                        }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                        });
+                builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                    }
+                            }
                 });
                 builder.show();
 
@@ -145,6 +145,10 @@ public class HomeFragment extends Fragment {
 
     static final int REQUEST_TAKE_PHOTO = 1559;
 
+    /*
+    Starts the stock camera application for taking a picture
+        Provides a file for the picture to actually go to
+     */
     private void dispatchTakePictureIntent() {
         Util.permissionCamera(getActivity());
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -165,6 +169,10 @@ public class HomeFragment extends Fragment {
     }
 
 
+    /*
+    Function to handle the result of either taking a picture or selecting an existing one
+        Takes the returned image (in both cases), and puts it into application specific storage
+     */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         //Handle the result of activity used for taking a picture
@@ -181,13 +189,17 @@ public class HomeFragment extends Fragment {
             AsyncTask.execute(Util.runnableUpdateTable);
         }
 
+        /*
+        Handle result of selecting an existing image on the phone
+        Makes a copy of the existing image
+         */
         if(requestCode == REQUEST_EXISTING_IMAGE && resultCode == Activity.RESULT_OK) {
             //First get the filepath of the file we selected
             Uri uri = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
             Cursor cursor = getActivity().getContentResolver().query(uri,
                     filePathColumn, null, null, null);
-            // Move to first row
+            // Move to first row(?)
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String filePath = cursor.getString(columnIndex);
@@ -206,6 +218,7 @@ public class HomeFragment extends Fragment {
                 Log.e(TAG, "Existing file:: error copying to "+filePath, ex);
             }
             //TODO anything that requires updating due to new record
+            //update the hash table that holds all bitmaps for the files in app storage
             AsyncTask.execute(Util.runnableUpdateTable);
 
         }
@@ -214,6 +227,9 @@ public class HomeFragment extends Fragment {
 
     String mCurrentPhotoPath;
 
+    /*
+    Creates a file for new images/records
+     */
     private File createImageFile() {
         // Create an image file name
 
@@ -241,6 +257,9 @@ public class HomeFragment extends Fragment {
 
     private int REQUEST_EXISTING_IMAGE = 1560;
 
+    /*
+    Starts the activity for selecting an existing image from the phone's gallery app
+     */
     private void getExistingImage() {
         Util.permissionExternalRead(getActivity());
         try {

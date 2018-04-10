@@ -54,10 +54,13 @@ public class RecordAdapter extends BaseAdapter {
 
 
         recordsList = new ArrayList<>(Arrays.asList(getFilesInDir()));
-        //recordsList = removeDuplicateRecords(dir.listFiles(filter));
         Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.size() + " images for gridview");
     }
 
+    /*
+    Gets all files within the directory we expect images to be in.
+    Applies a filter to keep only certain images types
+     */
     private File[] getFilesInDir() {
         File dir = new File(Util.getImgFilepath());
         FileFilter filter = new FileFilter() {
@@ -82,10 +85,15 @@ public class RecordAdapter extends BaseAdapter {
         return recordsList.get(position);
     }
 
+    //No ID's implemented
     public long getItemId(int position) {
         return 0;
     }
 
+    /*
+    Updates the records list.
+    Adds new records, removes records whose files are deleted, and notifies the view to update itself
+     */
     private void updateRecordsList() {
         addNewRecords();
         removeOldRecords();
@@ -94,6 +102,10 @@ public class RecordAdapter extends BaseAdapter {
         Log.d(TAG, "updateRecordsList:: " + recordsList.size() + " images for gridview");
     }
 
+    /*
+    Adds new records to the record list
+    If any files exist in the actual files system but are not in the records list yet, add them
+     */
     private void addNewRecords() {
         File dir = new File(Util.getImgFilepath());
 
@@ -105,12 +117,17 @@ public class RecordAdapter extends BaseAdapter {
         }
     }
 
+    /*
+    Removes any records from the array/list whose files no longer exist in their stored form
+        e.g., filename changed, file deleted
+     */
     private void removeOldRecords() {
         File[] dir = getFilesInDir();
 
         //need to find files that are still in the record list, but are no longer present in file system
         for (Iterator<File> iterator = recordsList.iterator(); iterator.hasNext(); ) {
             File recordFile = iterator.next();
+            /*
             boolean remove = true;
             for (File realFile: dir) {
                 if (realFile.getAbsolutePath().equals(recordFile.getAbsolutePath())) {
@@ -118,15 +135,21 @@ public class RecordAdapter extends BaseAdapter {
                 }
             }
             if (remove) iterator.remove();
+            */
+            if (!recordFile.exists()) iterator.remove();
         }
     }
 
 
-    // create a new ImageView for each item referenced by the Adapter
+    /*
+    Callback to get the views needed for each item in the grid
+        Contains an ImageView, TextView, and ImageButton, stored in a ViewHolder to avoid
+        repeated inflater and findViewById calls
+
+        References a hashtable for bitmaps using filenames as keys, scaled down to reduce computation time
+     */
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        //RecordView recordView = new RecordView(mContext);
-        //RelativeLayout grid_item =  recordView.initRecordView((File) getItem(position), convertView, parent);
 
         ViewHolder viewHolder;
         View view = convertView;
@@ -138,55 +161,53 @@ public class RecordAdapter extends BaseAdapter {
             view = (RelativeLayout) inflater.inflate(R.layout.record_image_layout, parent, false);
             viewHolder = new ViewHolder(view);
 
+            //Need all items in the grid to be the same height, so set that explicitly based on device characteristics
             int width = Util.getDeviceWidth() / 2;
             int height = (int) (Util.getDeviceHeight() / RECORD_VIEW_SCALE);
             GridView.LayoutParams params = new GridView.LayoutParams(width, height);
             //need to make sure height is the same across grid items so scrolling works
             view.setLayoutParams(params);
 
+            //Tag lets the view hold onto this viewHolder
             view.setTag(viewHolder);
         }
         else {
+            //if the view is recycled, get the viewHolder from the tag
             viewHolder = (ViewHolder) view.getTag();
         }
 
 
-        //update viewHolder's actual data
+        /*update viewHolder's actual data   */
 
+        //bitmap is a hash table whos keys are file names
         Bitmap bitmap = Util.recordImageTable.get(curFile.getName());
         if(bitmap!=null) {
-
+            //setup the image for the given record
             viewHolder.image.setImageBitmap(bitmap);
             viewHolder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-
+            //setup the button for managing the record
             viewHolder.options.setTag(curFile);
             viewHolder.options.setOnClickListener(buttonClick);
+
+            //Display the record's filename
+            viewHolder.text.setText(curFile.getName());
         }
-        viewHolder.text.setText(curFile.getName());
 
-
-/*
-        recordView.setEventListener(new RecordView.RecordViewListener() {
-            @Override
-            public void onEvent() {
-                //call to update may not be necessary..
-                updateRecordsList(mContext);
-                onRecordDataChanged();
-            }
-        });
-*/
 
         return view;
 
     }
 
 
+    /*
+    Listened for the options button
+        creates a popup menu and its corresponding listener
+     */
     private View.OnClickListener buttonClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             File img = (File) v.getTag();
-
 
             Context context = v.getContext();
             PopupMenu recordMenu = new PopupMenu(context, v);
@@ -201,6 +222,12 @@ public class RecordAdapter extends BaseAdapter {
         }
     };
 
+    /*
+    new private class for the file management button
+        needs to be private so a File can be associated with it
+
+        Current management options: view, share, rename, delete
+     */
     private class optionsClickListener implements PopupMenu.OnMenuItemClickListener {
 
         File record;
@@ -218,12 +245,12 @@ public class RecordAdapter extends BaseAdapter {
                 case R.id.record_view:
                     try {
                         Log.d(TAG, "View record: "+record.getAbsolutePath());
-                        //get file to view
+                        //get URI for file to view
                         Uri recordUri = FileProvider.getUriForFile(mContext,
                                 "edu.tamu.ecen.capstone.input.fileprovider",
                                 record);
 
-                        //create an intent so this opens in another app
+                        //create an intent so this opens in another app for viewing
                         Intent viewIntent = new Intent(Intent.ACTION_VIEW);
                         viewIntent.setDataAndType(recordUri, "image/*");
                         viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -235,12 +262,17 @@ public class RecordAdapter extends BaseAdapter {
                     break;
 
                 case R.id.record_rename:
+                    //todo pull up the keyboard for the user
+                    //todo show old filename (selected so it can be overwritten easily)
+                    final String name = record.getName();
+
+                    //AlertDialog will show; user inputs text here
                     AlertDialog.Builder builderRename = new AlertDialog.Builder(mContext);
                     builderRename.setTitle("New File Name");
 
                     // Set up the input
                     final EditText input = new EditText(mContext);
-                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                    // Specify the type of input expected
                     input.setInputType(InputType.TYPE_CLASS_TEXT);
                     builderRename.setView(input);
 
@@ -249,18 +281,18 @@ public class RecordAdapter extends BaseAdapter {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             //in this case, we need to rename the existing file
-                            String fileExtension = record.getName();
-                            fileExtension = fileExtension.substring(fileExtension.lastIndexOf("."));
+                            //User does not need to provide file extension.. use the old one
+                            String fileExtension = name.substring(name.lastIndexOf("."));
                             String newName = input.getText().toString();
                             newName = Util.getImgFilepath()+"/"+newName+fileExtension;
 
                             File renamedFile = new File(newName);
                             if (record.renameTo(renamedFile)) {
-                                Log.d(TAG, "File renamed correctly, and old file deleted: "+!record.exists());
-
-                                Util.replaceInTable(record.getName(), renamedFile.getName());
+                                //replace the key for this file's bitmap with the new key (new file name)
+                                Util.replaceInTable(name, renamedFile.getName());
                                 record = renamedFile;
 
+                                //update the records table in another thread
                                 AsyncTask.execute(Util.runnableUpdateTable);
                                 updateRecordsList();
 
@@ -276,16 +308,16 @@ public class RecordAdapter extends BaseAdapter {
                     });
                     builderRename.show();
 
-
-
-
                     break;
 
                 case R.id.record_share:
-                    ShareActionProvider shareActionProvider = (ShareActionProvider) item.getActionProvider();
+                    //ShareActionProvider shareActionProvider = (ShareActionProvider) item.getActionProvider();
+
+                    //create intent for sending the file
                     Intent sendIntent = new Intent(Intent.ACTION_SEND);
                     sendIntent.setType("image/*");
 
+                    //use file provider to get a URI for the file
                     Uri fileUri = FileProvider.getUriForFile(mContext,
                             "edu.tamu.ecen.capstone.input.fileprovider", record);
 
@@ -333,7 +365,7 @@ public class RecordAdapter extends BaseAdapter {
 
 
     public interface RecordAdapterListener {
-        public void onEvent();
+        void onEvent();
     }
 
     public void setEventListener(RecordAdapterListener listener) {
@@ -347,6 +379,10 @@ public class RecordAdapter extends BaseAdapter {
         }
     }
 
+    /*
+    ViewHolder maintains the objects needed for the views
+        Reduces need to call findViewById  every time view is recycled
+     */
     private class ViewHolder {
         public TextView text;
         public ImageView image;
@@ -354,6 +390,7 @@ public class RecordAdapter extends BaseAdapter {
 
         public RelativeLayout view;
 
+        //us findViewById only when we create this viewHolder
         public ViewHolder(View convertView) {
             view = (RelativeLayout) convertView;
             text = (TextView) view.findViewById(R.id.record_text_filename);

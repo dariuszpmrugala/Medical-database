@@ -152,14 +152,6 @@ public class Util {
         }
     }
 
-    public static String getLastPathComponent(File file) {
-        String[] segments = file.getAbsolutePath().split("/");
-        if (segments.length == 0)
-            return "";
-        String lastPathComponent = segments[segments.length - 1];
-        Log.d(TAG, "getLastPathComponent: " + lastPathComponent);
-        return lastPathComponent;
-    }
 
     /*
     Run this in a background thread
@@ -171,12 +163,16 @@ public class Util {
         updateRecordTable();
     }
 
+    /*
+    Update the hash table for all files in the iamges directory
+     */
     public static void updateRecordTable() {
         File[] allImages = (new File(getImgFilepath())).listFiles();
 
         for (File image : allImages) {
             String fileName = image.getName();
             Log.d(TAG, "updateRecordTable: file name is "+fileName);
+            //if file is not the desired image type, ignore it
             if (!(fileName.contains(".jpg") || fileName.contains(".jpeg") || fileName.contains(".png")))
                 continue;
 
@@ -185,6 +181,7 @@ public class Util {
                 try {
                     Bitmap bm = BitmapFactory.decodeFile(image.getAbsolutePath());
                     if (bm!=null) {
+                        //Scale down the bitmap to reduce computation requirements for the records grid
                         bm = Bitmap.createScaledBitmap(bm, Util.DEVICE_WIDTH / 2,
                                 (int) (Util.getDeviceHeight() / RECORD_VIEW_SCALE), true);
                         recordImageTable.put(fileName, bm);
@@ -200,6 +197,7 @@ public class Util {
         }
     }
 
+    //runnable to be used in asynchronous tasks
     public static Runnable runnableUpdateTable = new Runnable() {
         @Override
         public void run() {
@@ -207,6 +205,9 @@ public class Util {
         }
     };
 
+    /*
+    Moves the value at the old key to the new key
+     */
     public static void replaceInTable(String old, String newer) {
         Bitmap bm = recordImageTable.get(old);
         if(bm!=null) {
