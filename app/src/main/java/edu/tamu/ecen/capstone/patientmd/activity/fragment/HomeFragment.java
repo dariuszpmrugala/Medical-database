@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 
@@ -138,6 +139,29 @@ public class HomeFragment extends Fragment {
                 builder.show();
 
             }
+        });
+
+
+        //todo remove after done testing dropbox
+        Button dbTestButton = view.findViewById(R.id.dropbox_test_button);
+        dbTestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Util.permissionInternet(getActivity());
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        File [] files = Util.getFilesInDir();
+
+                        FileUtil.initDropbox();
+
+                        FileUtil.dropboxUploadAllRecords(files);
+
+                        FileUtil.dropboxDownload("/data/", ".csv");
+                    }
+                });
+            }
+
         });
 
 

@@ -16,6 +16,7 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -78,6 +79,13 @@ public class Util {
         return IMG_FILEPATH;
     }
 
+    private static String DATA_FILEPATH = null;
+    public static void setDataFilepath(String path) {
+        if(DATA_FILEPATH==null)
+            DATA_FILEPATH=path;
+    }
+    public static String getDataFilepath() { return DATA_FILEPATH; }
+
     public static String dateForFile(long time) {
         Date date = new Date(time);
         DateFormat formatter = new SimpleDateFormat("MM-dd-yy_HHmmss");
@@ -127,6 +135,16 @@ public class Util {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(activity, new String[] {Manifest.permission.CAMERA}, Const.PERMISSION_CAMERA_CODE);
+
+            return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+        }
+        else return true;
+    }
+
+    public static boolean permissionInternet(Activity activity) {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(activity, new String[] {Manifest.permission.INTERNET}, Const.PERMISSION_INTERNET_CODE);
 
             return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
         }
@@ -214,6 +232,22 @@ public class Util {
             recordImageTable.remove(old);
             recordImageTable.put(newer, bm);
         }
+    }
+
+    public static File[] getFilesInDir() {
+        File dir = new File(Util.getImgFilepath());
+        FileFilter filter = new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                String path = pathname.getName();
+                boolean accept = path.contains(".jpg") || path.contains(".jpeg") || path.contains(".png");
+                accept = accept && pathname.length()!=0;
+
+                return accept;
+            }
+        };
+
+        return dir.listFiles(filter);
     }
 
 

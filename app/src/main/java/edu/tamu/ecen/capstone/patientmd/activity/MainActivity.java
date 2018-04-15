@@ -67,9 +67,12 @@ public class MainActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         initView();
 
-        //initialize the path that we save images to
+        //initialize the path that we save images and data
         Util.setImgFilepath(this.getFilesDir().getAbsolutePath()+"/patientMD/records");
         new File(Util.getImgFilepath()).mkdirs();
+        Util.setDataFilepath(this.getFilesDir().getAbsolutePath()+"/patientMD/data");
+        new File(Util.getDataFilepath()).mkdirs();
+
         //instantiate a table to create a table for the bitmaps; should be easier to access in the future
         AsyncTask.execute(new Runnable(){
             @Override

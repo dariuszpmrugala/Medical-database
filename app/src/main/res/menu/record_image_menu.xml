@@ -17,6 +17,12 @@
         app:showAsAction="never"/>
 
     <item
+        android:id="@+id/record_upload"
+        android:title="@string/record_upload"
+        android:enabled="true"
+        app:showAsAction="never"/>
+
+    <item
         android:id="@+id/record_share"
         android:title="@string/record_share"
         android:enabled="true"

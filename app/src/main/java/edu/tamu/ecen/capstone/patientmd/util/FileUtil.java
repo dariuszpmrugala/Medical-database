@@ -1,13 +1,23 @@
 package edu.tamu.ecen.capstone.patientmd.util;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.users.FullAccount;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 
 public class FileUtil {
@@ -25,6 +35,8 @@ public class FileUtil {
 
     public static void initDropbox() {
 
+
+
         config = DbxRequestConfig.newBuilder("patientMD_V1.0").build();
         client = new DbxClientV2(config, DROPBOX_TOKEN);
 
@@ -35,7 +47,8 @@ public class FileUtil {
             ListFolderResult result = client.files().listFolder("");
             while (true) {
                 for (Metadata metadata : result.getEntries()) {
-                    System.out.println(metadata.getPathLower());
+                    //System.out.println(metadata.getPathLower());
+                    Log.d(TAG, "File in dropbox: " + metadata.getPathDisplay());
                 }
 
                 if (!result.getHasMore()) {
@@ -52,6 +65,125 @@ public class FileUtil {
     //todo figure out how to send and receive from dropbox
 
 
+    }
+
+
+    /*
+    upload all existing records to dropbox
+     */
+    public static boolean dropboxUploadAllRecords(File files[]) {
+// Upload "test.txt" to Dropbox
+        Log.d(TAG, "dropboxUploadAllRecords: " + files.length);
+        try {
+
+            for (File record : files) {
+                Log.d(TAG, "upload file "+record.getName() + " to dropbox");
+                InputStream in = new FileInputStream(record);
+                String path = "/records/"+record.getName();
+                FileMetadata metadata = client.files().uploadBuilder(path).uploadAndFinish(in);
+
+                Log.d(TAG, metadata.getName());
+            }
+        }
+        catch (FileNotFoundException fne)
+        {
+            fne.printStackTrace();
+            return false;
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+            return false;
+        }
+        catch (DbxException dbxe)
+        {
+            dbxe.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean dropboxUploadRecord(File file) {
+        Log.d(TAG, "dropboxUploadRecord: " );
+        try {
+
+                InputStream in = new FileInputStream(file);
+                String path = "/records/"+file.getName();
+                FileMetadata metadata = client.files().uploadBuilder(path).uploadAndFinish(in);
+
+                Log.d(TAG, metadata.getName());
+        }
+        catch (FileNotFoundException fne)
+        {
+            fne.printStackTrace();
+            return false;
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+            return false;
+        }
+        catch (DbxException dbxe)
+        {
+            dbxe.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+    Downloads all files of the specified type to the directory at the pathname
+    //todo generalize this more
+     */
+    public static boolean dropboxDownload(String dir, String type) {
+
+
+        File dest = new File(Util.getDataFilepath());
+        dest.mkdirs();
+        Log.d(TAG, "dropboxDownload from path: "+dest.getAbsolutePath());
+
+        try {
+            ListFolderResult result = client.files().listFolder(dir);
+            while (true) {
+                for (Metadata metadata : result.getEntries()) {
+                    //System.out.println(metadata.getPathLower());
+                    String filename = metadata.getName();
+                    if (filename.contains(type)) {
+                        Log.d(TAG, "dropboxDownload: download to: "+dest+"/"+filename);
+                        File file = new File(dest, filename);
+
+                        OutputStream os = new FileOutputStream(file);
+
+                        client.files().downloadBuilder(dir+filename).download(os);
+                        Log.d(TAG, "was download successful? file has bytes: "+file.length());
+                    }
+                    else continue;
+
+                }
+
+                if (!result.getHasMore()) {
+                    break;
+                }
+
+                result = client.files().listFolderContinue(result.getCursor());
+            }
+
+        } catch (DbxException dbe) {
+            Log.e(TAG, "DropboxDownload: error: ",dbe);
+            return false;
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "DropboxDownload: FileNotFound: ", e);
+            return false;
+        }
+        catch (IOException ioe) {
+            Log.e(TAG, "DropboxDown: IOexception: ", ioe);
+            return false;
+        }
+
+
+        return true;
     }
 
 
