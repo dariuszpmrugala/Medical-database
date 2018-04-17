@@ -141,7 +141,6 @@ public class RecordAdapter extends BaseAdapter {
         }
     }
 
-
     /*
     Callback to get the views needed for each item in the grid
         Contains an ImageView, TextView, and ImageButton, stored in a ViewHolder to avoid
@@ -177,7 +176,6 @@ public class RecordAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) view.getTag();
         }
 
-
         /*update viewHolder's actual data   */
 
         //bitmap is a hash table whos keys are file names
@@ -195,9 +193,7 @@ public class RecordAdapter extends BaseAdapter {
             viewHolder.text.setText(curFile.getName());
         }
 
-
         return view;
-
     }
 
 

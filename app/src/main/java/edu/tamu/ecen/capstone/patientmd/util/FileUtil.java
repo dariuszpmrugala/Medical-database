@@ -136,13 +136,15 @@ public class FileUtil {
     /*
     Downloads all files of the specified type to the directory at the pathname
     //todo generalize this more
+    @param dir: Directory in dropbox to download from
+    @param type: file extension (ie file type) that we want to download
      */
     public static boolean dropboxDownload(String dir, String type) {
 
 
         File dest = new File(Util.getDataFilepath());
         dest.mkdirs();
-        Log.d(TAG, "dropboxDownload from path: "+dest.getAbsolutePath());
+        Log.d(TAG, "dropboxDownload: download to path: "+dest.getAbsolutePath());
 
         try {
             ListFolderResult result = client.files().listFolder(dir);
@@ -157,7 +159,10 @@ public class FileUtil {
                         OutputStream os = new FileOutputStream(file);
 
                         client.files().downloadBuilder(dir+filename).download(os);
-                        Log.d(TAG, "was download successful? file has bytes: "+file.length());
+                        if(file.length()>0) {
+                            //if this is true, likely that the download was successful
+                            Log.d(TAG, "Download of "+filename+" successful with bytes: "+filename.length());
+                        }
                     }
                     else continue;
 
@@ -186,5 +191,61 @@ public class FileUtil {
         return true;
     }
 
+    /*
+    Download all CSV files in a given directory with in the dropbox file path
+    Saves the files to an app-specific folder whose path is at Util.getDataFilepath()
+
+    @param dir: directory in dropbox to download from
+        /records/ contains images of records
+        /data/ contains csv files of processed data
+     */
+    public static boolean downloadCSV(String dir) {
+        File dest = new File(Util.getDataFilepath());
+        dest.mkdirs();
+        Log.d(TAG, "dropboxDownload from path: "+dest.getAbsolutePath());
+
+        try {
+            ListFolderResult result = client.files().listFolder(dir);
+            while (true) {
+                for (Metadata metadata : result.getEntries()) {
+                    String filename = metadata.getName();
+
+                    Log.d(TAG, "dropboxDownload: download to: "+dest+"/"+filename);
+                    File file = new File(dest, filename);
+
+                    OutputStream os = new FileOutputStream(file);
+
+                    client.files().downloadBuilder(dir+filename).download(os);
+                    if(file.length()>0) {
+                        //if this is true, likely that the download was successful
+                        Log.d(TAG, "Download of "+filename+" successful!");
+                    }
+
+                    else continue;
+
+                }
+
+                if (!result.getHasMore()) {
+                    break;
+                }
+
+                result = client.files().listFolderContinue(result.getCursor());
+            }
+
+        } catch (DbxException dbe) {
+            Log.e(TAG, "DropboxDownload: error: ",dbe);
+            return false;
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "DropboxDownload: FileNotFound: ", e);
+            return false;
+        }
+        catch (IOException ioe) {
+            Log.e(TAG, "DropboxDown: IOexception: ", ioe);
+            return false;
+        }
+
+
+        return true;
+    }
 
 }

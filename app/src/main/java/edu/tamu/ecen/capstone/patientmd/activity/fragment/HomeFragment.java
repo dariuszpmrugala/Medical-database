@@ -199,25 +199,33 @@ public class HomeFragment extends Fragment {
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        Log.d(TAG, "onActivityResult: requestCode, resultCode: "+requestCode+","+resultCode);
         //Handle the result of activity used for taking a picture
-        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
-            int index = mCurrentPhotoPath.lastIndexOf("/");
-            String toastMessage = mCurrentPhotoPath.substring(index+1, mCurrentPhotoPath.length());
-            Log.d(TAG,"onActivityResult:: new Image file: "+mCurrentPhotoPath);
-            Log.d(TAG,"onActivityResult:: Filesize: "+ (Util.getFileSize(mCurrentPhotoPath)) + " bytes");
+        if(requestCode == REQUEST_TAKE_PHOTO) {
+             if (resultCode == Activity.RESULT_OK) {
+                 int index = mCurrentPhotoPath.lastIndexOf("/");
+                 String toastMessage = mCurrentPhotoPath.substring(index + 1, mCurrentPhotoPath.length());
+                 Log.d(TAG, "onActivityResult:: new Image file: " + mCurrentPhotoPath);
+                 Log.d(TAG, "onActivityResult:: Filesize: " + (Util.getFileSize(mCurrentPhotoPath)) + " bytes");
 
-            Toast.makeText(getActivity().getApplicationContext(), "Filename: "+toastMessage, Toast.LENGTH_LONG)
-                    .show();
+                 Toast.makeText(getActivity().getApplicationContext(), "Filename: " + toastMessage, Toast.LENGTH_LONG)
+                         .show();
 
-            //ToDo: anything that requires the picture as soon as it is taken
-            AsyncTask.execute(Util.runnableUpdateTable);
+                 //ToDo: anything that requires the picture as soon as it is taken
+                 AsyncTask.execute(Util.runnableUpdateTable);
+             }
+            else if (resultCode == Activity.RESULT_CANCELED){
+                Log.d(TAG, "Cancelled taking photo, deleting empty file " + mCurrentPhotoPath);
+                File image = new File(mCurrentPhotoPath);
+                image.delete();
+            }
         }
 
         /*
         Handle result of selecting an existing image on the phone
         Makes a copy of the existing image
          */
-        if(requestCode == REQUEST_EXISTING_IMAGE && resultCode == Activity.RESULT_OK) {
+        if(requestCode == REQUEST_EXISTING_IMAGE  && resultCode == Activity.RESULT_OK) {
             //First get the filepath of the file we selected
             Uri uri = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -244,6 +252,9 @@ public class HomeFragment extends Fragment {
             //TODO anything that requires updating due to new record
             //update the hash table that holds all bitmaps for the files in app storage
             AsyncTask.execute(Util.runnableUpdateTable);
+
+
+
 
         }
     }
@@ -272,10 +283,10 @@ public class HomeFragment extends Fragment {
             // Save a file: path for use with ACTION_VIEW intents
             mCurrentPhotoPath = image.getAbsolutePath();
         } catch (IOException ex) {
-            Log.d(TAG, "CreateImageFile:: IOException", ex);
+            Log.d(TAG, "createImageFile:: IOException", ex);
             return null;
         }
-        Log.d(TAG, "CreateImageFile:: path is "+mCurrentPhotoPath);
+        Log.d(TAG, "createImageFile:: path is "+mCurrentPhotoPath);
         return image;
     }
 
