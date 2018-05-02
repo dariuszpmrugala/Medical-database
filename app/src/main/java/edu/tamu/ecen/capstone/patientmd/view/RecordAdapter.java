@@ -40,6 +40,9 @@ import static edu.tamu.ecen.capstone.patientmd.util.Const.RECORD_VIEW_SCALE;
 
 /**
  * Created by reesul on 4/3/2018.
+ *
+ *
+ * TODO add sorting options
  */
 
 public class RecordAdapter extends BaseAdapter {
@@ -282,8 +285,18 @@ public class RecordAdapter extends BaseAdapter {
                             String fileExtension = name.substring(name.lastIndexOf("."));
                             String newName = input.getText().toString();
                             newName = Util.getImgFilepath()+"/"+newName+fileExtension;
+                            Log.d(TAG, "RecordRename:: renaming file to "+newName);
+
+                            //check if new filename is already present as another file's name
+                            //TODO make it more obvious to the user that the file name is invalid
+                            if(Util.recordImageTable.get(Util.getLastPathComponent(newName)) != null) {
+                                Log.d(TAG, "RecordRename:: file " + newName + " already exists! Try another name");
+                                Toast.makeText(mContext, "File by that name already exists! Try another name", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
 
                             File renamedFile = new File(newName);
+
                             if (record.renameTo(renamedFile)) {
                                 //replace the key for this file's bitmap with the new key (new file name)
                                 Util.replaceInTable(name, renamedFile.getName());

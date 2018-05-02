@@ -106,13 +106,15 @@ public class FileUtil {
 
     public static boolean dropboxUploadRecord(File file) {
         Log.d(TAG, "dropboxUploadRecord: " );
+        if (client==null ||config==null)
+            initDropbox();
         try {
 
                 InputStream in = new FileInputStream(file);
                 String path = "/records/"+file.getName();
                 FileMetadata metadata = client.files().uploadBuilder(path).uploadAndFinish(in);
 
-                Log.d(TAG, metadata.getName());
+                Log.d(TAG, metadata.getName()+" uploaded successfully");
         }
         catch (FileNotFoundException fne)
         {

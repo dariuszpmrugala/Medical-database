@@ -32,6 +32,8 @@ import edu.tamu.ecen.capstone.patientmd.util.Util;
  * Created by Reese on 3/21/2018.
  *
  * This Fragment is for showing the home application
+ *
+ * TODO allow other applcations to share images with this application
  */
 
 public class HomeFragment extends Fragment {
@@ -141,7 +143,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-
+        /*
         //todo remove after done testing dropbox
         Button dbTestButton = view.findViewById(R.id.dropbox_test_button);
         dbTestButton.setOnClickListener(new View.OnClickListener() {
@@ -163,6 +165,7 @@ public class HomeFragment extends Fragment {
             }
 
         });
+        */
 
 
     }
@@ -226,7 +229,7 @@ public class HomeFragment extends Fragment {
         Makes a copy of the existing image
          */
         if(requestCode == REQUEST_EXISTING_IMAGE  && resultCode == Activity.RESULT_OK) {
-            //First get the filepath of the file we selected
+            //First get the filepath of the file we selected from the uri returned by the activity
             Uri uri = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
             Cursor cursor = getActivity().getContentResolver().query(uri,
@@ -237,7 +240,16 @@ public class HomeFragment extends Fragment {
             String filePath = cursor.getString(columnIndex);
             Log.d(TAG, "onActivityResult:: existing file at "+filePath);
 
-            //Now save a copy of the file into app storage
+            //check if the file is of valid type; ignore it if it is not
+            boolean validExtension = filePath.endsWith(".jpg") || filePath.endsWith(".jpeg") || filePath.endsWith(".png");
+            if(!validExtension) {
+                Log.d(TAG, "onActivityResult:: file " + filePath + " is not a valid file type. Ignoring.");
+                Toast.makeText(getContext(), "Invalid file type, please choose another file", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+
+            //save a copy of the file into app storage
             File dest = createImageFile();
             File src = new File(filePath);
             if(dest == null || src.length()==0) {
@@ -245,7 +257,8 @@ public class HomeFragment extends Fragment {
                 return;
             }
             try {
-                Util.copyFile(src, dest);
+                if(Util.copyFile(src, dest))
+                    Toast.makeText(getContext(), "Filename: "+dest.getName(), Toast.LENGTH_LONG).show();
             } catch (IOException ex) {
                 Log.e(TAG, "Existing file:: error copying to "+filePath, ex);
             }

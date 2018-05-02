@@ -154,7 +154,7 @@ public class Util {
     /*
     Copy file from out location to another
      */
-    public static void copyFile(File src, File dst) throws IOException {
+    public static boolean copyFile(File src, File dst) throws IOException {
         Log.d(TAG, "CopyFile:: src has size in bytes: " + src.length());
         try (InputStream in = new FileInputStream(src)) {
             try (OutputStream out = new FileOutputStream(dst)) {
@@ -166,6 +166,7 @@ public class Util {
                 }
 
                 Log.d(TAG, "CopyFile:: dest has size in bytes: " + dst.length());
+                return src.length()==dst.length();
             }
         }
     }
@@ -250,5 +251,16 @@ public class Util {
         return dir.listFiles(filter);
     }
 
+    /*
+    Similar functionality to File.getName(), but operates on a String
+     */
+    public static String getLastPathComponent(String filePath) {
+        String[] segments = filePath.split("/");
+        if (segments.length == 0)
+            return "";
+        String lastPathComponent = segments[segments.length - 1];
+        Log.d(TAG, "getLastPathComponent: " + lastPathComponent);
+        return lastPathComponent;
+    }
 
 }
