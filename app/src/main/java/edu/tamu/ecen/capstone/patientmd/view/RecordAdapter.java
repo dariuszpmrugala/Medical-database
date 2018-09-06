@@ -43,6 +43,7 @@ import static edu.tamu.ecen.capstone.patientmd.util.Const.RECORD_VIEW_SCALE;
  *
  *
  * TODO add sorting options
+ * https://stackoverflow.com/questions/7723872/apply-sorting-in-adapter-in-grid-layout
  */
 
 public class RecordAdapter extends BaseAdapter {
