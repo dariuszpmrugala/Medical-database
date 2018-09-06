@@ -7,17 +7,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 
 import edu.tamu.ecen.capstone.patientmd.R;
-import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
+import edu.tamu.ecen.capstone.patientmd.view.RecordAdapter;
 
 /**
  * Created by Reese on 3/21/2018.
  */
 
-public class PlotFragment extends Fragment {
+public class RecordFragment extends Fragment {
 
-    private static final String TAG = "PlotFragment";
+    private static final String TAG = "RecordsFragment:";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -29,32 +30,32 @@ public class PlotFragment extends Fragment {
                 parent.removeView(view);
             }
         }
-        return inflater.inflate(R.layout.plot_fragment_layout, container, false);
+        return inflater.inflate(R.layout.record_fragment_layout, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        //initRecordView(view);
-        //Log.d(TAG, "Trying dropbox: worked? "+ tryDropbox());
+        GridView gridView = (GridView) getActivity().findViewById(R.id.records_grid);
+        final RecordAdapter adapter = new RecordAdapter(getContext(), gridView.getWidth());
+        gridView.setAdapter(adapter);
+
+        adapter.setEventListener(new RecordAdapter.RecordAdapterListener() {
+            @Override
+            public void onEvent() {
+                adapter.notifyDataSetChanged();
+                Log.d(TAG, "Updating adapter");
+            }
+        });
 
     }
 
-    public static PlotFragment newInstance() {
-        return new PlotFragment();
+    public static RecordFragment newInstance() {
+
+        return new RecordFragment();
     }
 
+    //todo use event listener from RecordView
 
-    public boolean tryDropbox() {
-        try {
-            FileUtil.initDropbox();
-
-        } catch (Exception e) {
-            Log.e(TAG, "tryDropbox", e);
-            return false;
-        }
-
-        return true;
-    }
 }
