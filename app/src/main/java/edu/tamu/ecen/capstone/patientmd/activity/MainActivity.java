@@ -24,7 +24,6 @@ import edu.tamu.ecen.capstone.patientmd.activity.fragment.RecordFragment;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 
-
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTextMessage;

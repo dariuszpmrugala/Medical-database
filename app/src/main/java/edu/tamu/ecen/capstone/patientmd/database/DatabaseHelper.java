@@ -1,4 +1,4 @@
-package edu.tamu.ecen.capstone.patientmd.database
+package edu.tamu.ecen.capstone.patientmd.database;
 
 /**
  * Created by Jonathan on 2/27/2018.

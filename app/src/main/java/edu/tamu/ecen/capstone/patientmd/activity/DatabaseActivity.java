@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.util.MedicalSample;
 
 public class DatabaseActivity extends AppCompatActivity {
 

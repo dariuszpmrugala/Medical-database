@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.tamu.ecen.capstone.patientmd.activity.PlotActivity">
+    tools:context="edu.tamu.ecen.capstone.patientmd.plot.PlotActivity">
 
     <Spinner
         android:id="@+id/spinner_tests"

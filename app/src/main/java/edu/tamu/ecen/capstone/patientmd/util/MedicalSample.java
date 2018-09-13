@@ -1,4 +1,4 @@
-package edu.tamu.ecen.capstone.patientmd.activity;
+package edu.tamu.ecen.capstone.patientmd.util;
 
 /**
  * Created by Jonathan on 3/31/2018.

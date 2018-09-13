@@ -10,8 +10,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.plot.*;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity_jonathan extends AppCompatActivity {
 
     private TextView mTextMessage;
 
