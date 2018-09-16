@@ -23,6 +23,7 @@ import java.io.OutputStream;
 public class FileUtil {
 
     //data needed to access dropbox API
+    //TODO allow user to log in to??
     private static final String DROPBOX_KEY = "yrrbgz06t4netbc";
     private static final String DROPBOX_SECRET = "yrrbgz06t4netbc";
     private static final String DROPBOX_TOKEN = "BBLbh4uhW0AAAAAAAAAEd3XCUydNA8yreZ4CxMa1VZfbyuBDAVzMJ3sTnCZHA4NZ";

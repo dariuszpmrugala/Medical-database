@@ -71,7 +71,7 @@ public class RecordAdapter extends BaseAdapter {
             @Override
             public boolean accept(File pathname) {
                 String path = pathname.getName();
-                boolean accept = path.contains(".jpg") || path.contains(".jpeg") || path.contains(".png");
+                boolean accept = path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png");
                 accept = accept && pathname.length()!=0;
 
                 return accept;
@@ -262,8 +262,8 @@ public class RecordAdapter extends BaseAdapter {
                     break;
 
                 case R.id.record_rename:
-                    //todo pull up the keyboard for the user
-                    //todo show old filename (selected so it can be overwritten easily)
+                    //todo (USABILITY) pull up the keyboard for the user since they have to click on field
+                    //todo (USABILITY) show old filename (selected so it can be overwritten easily)
                     final String name = record.getName();
 
                     //AlertDialog will show; user inputs text here
@@ -348,7 +348,7 @@ public class RecordAdapter extends BaseAdapter {
                     break;
 
                 case R.id.record_delete:
-                    //give alertdialog for confirmation
+                    //give alert dialog for confirmation
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setMessage(R.string.record_delete_confirmation);
                     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
