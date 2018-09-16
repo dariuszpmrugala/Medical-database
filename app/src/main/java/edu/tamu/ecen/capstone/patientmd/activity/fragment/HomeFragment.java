@@ -42,6 +42,9 @@ public class HomeFragment extends Fragment {
     private Button cameraButton;
 
     private final String TAG = "HomeFragment:";
+    static final int REQUEST_TAKE_PHOTO = 1559;
+    private int REQUEST_EXISTING_IMAGE = 1560;
+
 
     public static Fragment newInstance(String text) {
         Fragment frag = new HomeFragment();
@@ -170,7 +173,6 @@ public class HomeFragment extends Fragment {
 
     }
 
-    static final int REQUEST_TAKE_PHOTO = 1559;
 
     /*
     Starts the stock camera application for taking a picture
@@ -303,7 +305,6 @@ public class HomeFragment extends Fragment {
         return image;
     }
 
-    private int REQUEST_EXISTING_IMAGE = 1560;
 
     /*
     Starts the activity for selecting an existing image from the phone's gallery app
