@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 import edu.tamu.ecen.capstone.patientmd.R;
@@ -58,6 +60,7 @@ public class RecordAdapter extends BaseAdapter {
 
 
         recordsList = new ArrayList<>(Arrays.asList(getFilesInDir()));
+        Collections.sort(recordsList, compareByModifiedTime);
         Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.size() + " images for gridview");
     }
 
@@ -102,6 +105,10 @@ public class RecordAdapter extends BaseAdapter {
         addNewRecords();
         removeOldRecords();
         onRecordDataChanged();
+
+        checkArraylist();
+        Collections.sort(recordsList, compareByModifiedTime);
+        checkArraylist();
 
         Log.d(TAG, "updateRecordsList:: " + recordsList.size() + " images for gridview");
     }
@@ -198,6 +205,22 @@ public class RecordAdapter extends BaseAdapter {
 
         return view;
     }
+
+    private Comparator<File> compareByModifiedTime = new Comparator<File>() {
+        @Override
+        public int compare(File o1, File o2) {
+            long timestamp1 = o1.lastModified();
+            long timestamp2 = o2.lastModified();
+            int retVal = timestamp1 > timestamp2 ? -1 : 1;
+            Log.d(TAG, "compareByModifiedTime:: " + o1.getName() + " vs. " + o2.getName());
+
+            Log.d(TAG, "compareByModifiedTime::  "+ timestamp1 +" vs. " + timestamp2 + " : " + retVal);
+            if (timestamp1 == timestamp2)
+                return 0;
+            return retVal;
+
+        }
+    };
 
 
     /*
@@ -300,10 +323,12 @@ public class RecordAdapter extends BaseAdapter {
                             if (record.renameTo(renamedFile)) {
                                 //replace the key for this file's bitmap with the new key (new file name)
                                 Util.replaceInTable(name, renamedFile.getName());
+                                renamedFile.setLastModified(System.currentTimeMillis());
                                 record = renamedFile;
 
                                 //update the records table in another thread
                                 AsyncTask.execute(Util.runnableUpdateTable);
+
                                 updateRecordsList();
 
                             }
@@ -419,6 +444,11 @@ public class RecordAdapter extends BaseAdapter {
         }
     }
 
+    private void checkArraylist(){
+        for (int i = 0; i < recordsList.size(); i++) {
+            Log.d(TAG, recordsList.get(i).getName());
+        }
+    }
 
 
 
