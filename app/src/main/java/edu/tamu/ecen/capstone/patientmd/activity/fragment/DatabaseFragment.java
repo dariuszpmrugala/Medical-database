@@ -1,11 +1,17 @@
-/*
+package edu.tamu.ecen.capstone.patientmd.activity.fragment;
 
-TODO: make this a fragment maybe? probably need to integrate these functions more directly
- */
-
-
-package edu.tamu.ecen.capstone.patientmd.activity;
-
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.FragmentManager;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -32,7 +38,19 @@ import java.util.List;
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.util.MedicalSample;
 
-public class DatabaseActivity extends AppCompatActivity {
+import edu.tamu.ecen.capstone.patientmd.R;
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link DatabaseFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link DatabaseFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class DatabaseFragment extends Fragment {
+
+    private String TAG = "DatabaseFragment";
 
     private DatabaseHelper myDb;
     private EditText editID, editDate, editTests, editResult, editUnits, editReference_Interval, editField, editText;
@@ -41,41 +59,102 @@ public class DatabaseActivity extends AppCompatActivity {
     private List<DatabaseEntry> entries = new ArrayList<>();
     private DatabaseReference rootRef;
 
+    private OnFragmentInteractionListener mListener;
+
+    public DatabaseFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+    */
+    // TODO: Rename and change types and number of parameters
+    public static DatabaseFragment newInstance() {
+        DatabaseFragment fragment = new DatabaseFragment();
+        return fragment;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_database);
-
-        myDb = new DatabaseHelper(this);
-
-        editID = findViewById(R.id.editText_id);
-        editDate = findViewById(R.id.editText_date);
-        editTests = findViewById(R.id.editText_tests);
-        editResult = findViewById(R.id.editText_result);
-        editUnits = findViewById(R.id.editText_units);
-        editReference_Interval = findViewById(R.id.editText_reference_interval);
-        editField = findViewById(R.id.editText_field);
-        editText = findViewById(R.id.editText_text);
-
-        btnAdd = findViewById(R.id.button_add);
-        btnView = findViewById(R.id.button_view);
-        btnUpdate = findViewById(R.id.button_update);
-        btnDelete = findViewById(R.id.button_delete);
-        btnQuery = findViewById(R.id.button_query);
-
+        final Context context = getContext();
+        myDb = new DatabaseHelper(context);
         rootRef = FirebaseDatabase.getInstance().getReference();
 
+    }
 
-//        AddData();
-//        ViewAll();
-//        UpdateData();
-//        DeleteData();
-//        QueryData();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
+        View view = getView();
+        if (view != null) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            if (parent != null) {
+                parent.removeView(view);
+            }
+        }
+
+        return inflater.inflate(R.layout.content_database, container, false);
+//
+//        TextView textView = new TextView(getActivity());
+//        textView.setText(R.string.hello_blank_fragment);
+//        return textView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+       // ConstraintLayout cl = view.findViewById(R.layout.content_database);
+
+        editID = view.findViewById(R.id.editText_id);
+        editDate = view.findViewById(R.id.editText_date);
+        editTests = view.findViewById(R.id.editText_tests);
+        editResult = view.findViewById(R.id.editText_result);
+        editUnits = view.findViewById(R.id.editText_units);
+        editReference_Interval = view.findViewById(R.id.editText_reference_interval);
+        editField = view.findViewById(R.id.editText_field);
+        editText = view.findViewById(R.id.editText_text);
+
+        btnAdd = view.findViewById(R.id.button_add);
+        btnView = view.findViewById(R.id.button_view);
+        btnUpdate = view.findViewById(R.id.button_update);
+        btnDelete = view.findViewById(R.id.button_delete);
+        btnQuery = view.findViewById(R.id.button_query);
+
+
+        AddData();
+        ViewAll();
+        UpdateData();
+        DeleteData();
+        QueryData();
+
+    }
+
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
     }
 
     private void ReadMedicalData() {
+        Log.d(TAG, "ReadMedicalData:: Begin");
         InputStream is = getResources().openRawResource(R.raw.data);
+        if (is==null) {
+            Log.d(TAG, "FUCK INPUTSTREAM");
+        }
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is, Charset.forName("UTF-8"))
         );
@@ -88,6 +167,7 @@ public class DatabaseActivity extends AppCompatActivity {
             reader.readLine();
 
             while ( (line = reader.readLine()) != null) {
+                Log.d(TAG, "ReadMedicalDatabase:: " + line);
                 String[] tokens = line.split(",");
 
                 MedicalSample sample = new MedicalSample();
@@ -284,11 +364,14 @@ public class DatabaseActivity extends AppCompatActivity {
     }
 
     public void ShowMessage(String title,String Message){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final Context context = getContext();
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setCancelable(true);
         builder.setTitle(title);
         builder.setMessage(Message);
         builder.show();
     }
+
+
 
 }

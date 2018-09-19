@@ -1,6 +1,7 @@
 package edu.tamu.ecen.capstone.patientmd.activity.fragment;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -109,7 +111,7 @@ public class HomeFragment extends Fragment {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle(R.string.record_input_type);
                 builder.setItems(new CharSequence[]
-                                {"Take a picture", "Select an existing image", /*"Select other existing file"*/},
+                                {"Take a picture", "Select an existing image", "Insert a record manually"},
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // The 'which' argument contains the index position
@@ -123,12 +125,12 @@ public class HomeFragment extends Fragment {
                                         Log.d(TAG, "Record Button:: use image");
                                         getExistingImage();
                                         break;
-                                        /*  todo get file from other part of storage like pdf
                                     case 2:
-                                        Log.d(TAG, "Record Button:: use existing file (other)");
-                                        getExistingFile();
+                                        Log.d(TAG, "Record Button:: insert manual record");
+                                        //start database fragment
+                                        startDatabaseFragment();
                                         break;
-                                        */
+
                                 }
                             }
                         });
@@ -321,6 +323,23 @@ public class HomeFragment extends Fragment {
     }
 
 
+    private void startDatabaseFragment() {
+
+        int viewId;
+        String tag = "DatabaseFragment";
+
+        Fragment fragment = DatabaseFragment.newInstance();
+
+        android.support.v4.app.FragmentManager fragmentManager = getFragmentManager();
+
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        //ft.remove(homeFrag);
+        //ft.replace(viewId, fragment);
+        ft.replace(R.id.fragment_container, fragment, tag);
+        ft.addToBackStack(null);
+        ft.show(fragment);
+        ft.commit();
+    }
 
 
 }
