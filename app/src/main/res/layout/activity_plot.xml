@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.tamu.ecen.capstone.patientmd.plot.PlotActivity">
+    tools:context="edu.tamu.ecen.capstone.patientmd.activity.fragment.PlotFragment">
 
     <Spinner
         android:id="@+id/spinner_tests"
@@ -15,7 +15,6 @@
         android:id="@+id/button_date_low"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="LowDatePicker"
         android:text="Low Date"
         app:layout_constraintStart_toEndOf="@+id/spinner_tests" />
 
@@ -23,7 +22,6 @@
         android:id="@+id/button_date_high"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="HighDatePicker"
         android:text="High Date"
         app:layout_constraintStart_toEndOf="@+id/button_date_low" />
 
@@ -33,7 +31,6 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="160dp"
         android:layout_marginTop="16dp"
-        android:onClick="Plot"
         android:text="Plot"
         app:layout_constraintStart_toStartOf="@+id/spinner_tests"
         app:layout_constraintTop_toBottomOf="@+id/line_chart" />
@@ -58,9 +55,8 @@
 
     <com.jjoe64.graphview.GraphView
         android:id="@+id/line_chart"
-        android:layout_width="370dp"
-        android:layout_height="450dp"
-        android:layout_marginLeft="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="350dp"
         android:layout_marginTop="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_date_low"></com.jjoe64.graphview.GraphView>

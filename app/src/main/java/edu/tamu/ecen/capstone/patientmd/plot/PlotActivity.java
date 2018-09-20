@@ -68,7 +68,7 @@ public class PlotActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_plot);
+        //setContentView(R.layout.activity_plot);
 
         myDb = new DatabaseHelper(this);
         spinner_tests = findViewById(R.id.spinner_tests);
@@ -296,14 +296,14 @@ public class PlotActivity extends AppCompatActivity {
            ShowMessage("Data To Plot", "No Data Found");
     }
 
-    public void LowDatePicker(View view){
-        Bundle bundle = new Bundle();
-        bundle.putInt("id", date_low_id);
-        DatePickerFragment fragment = new DatePickerFragment();
-        FragmentManager manager = getFragmentManager();
-        fragment.setArguments(bundle);
-        fragment.show(manager, "DatePicker");
-    }
+//    public void LowDatePicker(View view){
+//        Bundle bundle = new Bundle();
+//        bundle.putInt("id", date_low_id);
+//        DatePickerFragment fragment = new DatePickerFragment();
+//        FragmentManager manager = getFragmentManager();
+//        fragment.setArguments(bundle);
+//        fragment.show(manager, "DatePicker");
+//    }
 
     public void HighDatePicker(View view){
         Bundle bundle = new Bundle();
