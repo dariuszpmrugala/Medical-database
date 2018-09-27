@@ -217,6 +217,7 @@ public class HomeFragment extends Fragment {
                          .show();
 
                  //ToDo: anything that requires the picture as soon as it is taken
+                 //TODO send file over HTTP now
                  AsyncTask.execute(Util.runnableUpdateTable);
              }
             else if (resultCode == Activity.RESULT_CANCELED){
@@ -265,6 +266,7 @@ public class HomeFragment extends Fragment {
                 Log.e(TAG, "Existing file:: error copying to "+filePath, ex);
             }
             //TODO anything that requires updating due to new record
+            //TODO send file over HTTP
             //update the hash table that holds all bitmaps for the files in app storage
             AsyncTask.execute(Util.runnableUpdateTable);
 
