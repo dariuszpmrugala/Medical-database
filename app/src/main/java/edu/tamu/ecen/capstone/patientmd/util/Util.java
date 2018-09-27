@@ -192,7 +192,7 @@ public class Util {
             String fileName = image.getName();
             Log.d(TAG, "updateRecordTable: file name is "+fileName);
             //if file is not the desired image type, ignore it
-            if (!(fileName.contains(".jpg") || fileName.contains(".jpeg") || fileName.contains(".png")))
+            if (!(fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png")))
                 continue;
 
             //if key does not exist within the bitmap, put a new one in

@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 import edu.tamu.ecen.capstone.patientmd.R;
@@ -59,6 +61,7 @@ public class RecordAdapter extends BaseAdapter {
 
 
         recordsList = new ArrayList<>(Arrays.asList(getFilesInDir()));
+        Collections.sort(recordsList, compareByModifiedTime);
         Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.size() + " images for gridview");
     }
 
@@ -72,7 +75,7 @@ public class RecordAdapter extends BaseAdapter {
             @Override
             public boolean accept(File pathname) {
                 String path = pathname.getName();
-                boolean accept = path.contains(".jpg") || path.contains(".jpeg") || path.contains(".png");
+                boolean accept = path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png");
                 accept = accept && pathname.length()!=0;
 
                 return accept;
@@ -103,6 +106,10 @@ public class RecordAdapter extends BaseAdapter {
         addNewRecords();
         removeOldRecords();
         onRecordDataChanged();
+
+        checkArraylist();
+        Collections.sort(recordsList, compareByModifiedTime);
+        checkArraylist();
 
         Log.d(TAG, "updateRecordsList:: " + recordsList.size() + " images for gridview");
     }
@@ -200,6 +207,22 @@ public class RecordAdapter extends BaseAdapter {
         return view;
     }
 
+    private Comparator<File> compareByModifiedTime = new Comparator<File>() {
+        @Override
+        public int compare(File o1, File o2) {
+            long timestamp1 = o1.lastModified();
+            long timestamp2 = o2.lastModified();
+            int retVal = timestamp1 > timestamp2 ? -1 : 1;
+            Log.d(TAG, "compareByModifiedTime:: " + o1.getName() + " vs. " + o2.getName());
+
+            Log.d(TAG, "compareByModifiedTime::  "+ timestamp1 +" vs. " + timestamp2 + " : " + retVal);
+            if (timestamp1 == timestamp2)
+                return 0;
+            return retVal;
+
+        }
+    };
+
 
     /*
     Listened for the options button
@@ -263,8 +286,8 @@ public class RecordAdapter extends BaseAdapter {
                     break;
 
                 case R.id.record_rename:
-                    //todo pull up the keyboard for the user
-                    //todo show old filename (selected so it can be overwritten easily)
+                    //todo (USABILITY) pull up the keyboard for the user since they have to click on field
+                    //todo (USABILITY) show old filename (selected so it can be overwritten easily)
                     final String name = record.getName();
 
                     //AlertDialog will show; user inputs text here
@@ -301,10 +324,12 @@ public class RecordAdapter extends BaseAdapter {
                             if (record.renameTo(renamedFile)) {
                                 //replace the key for this file's bitmap with the new key (new file name)
                                 Util.replaceInTable(name, renamedFile.getName());
+                                renamedFile.setLastModified(System.currentTimeMillis());
                                 record = renamedFile;
 
                                 //update the records table in another thread
                                 AsyncTask.execute(Util.runnableUpdateTable);
+
                                 updateRecordsList();
 
                             }
@@ -349,7 +374,7 @@ public class RecordAdapter extends BaseAdapter {
                     break;
 
                 case R.id.record_delete:
-                    //give alertdialog for confirmation
+                    //give alert dialog for confirmation
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setMessage(R.string.record_delete_confirmation);
                     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -420,6 +445,11 @@ public class RecordAdapter extends BaseAdapter {
         }
     }
 
+    private void checkArraylist(){
+        for (int i = 0; i < recordsList.size(); i++) {
+            Log.d(TAG, recordsList.get(i).getName());
+        }
+    }
 
 
 

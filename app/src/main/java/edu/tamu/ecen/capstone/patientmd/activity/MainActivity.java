@@ -102,12 +102,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /*
+    Chooses which fragment to open based on which menu item was pressed
+     */
     private boolean selectFragment(MenuItem item) {
         Fragment fragment = null;
         int viewId;
         String tag;
 
-        // Special case, this is the default for when the app starts
+        // Special case, this is the default for when the app starts (home fragment)
         if (item==null) {
             Log.d(TAG, "SelectFragment:: Home");
             fragment = HomeFragment.newInstance(null);
@@ -154,6 +157,10 @@ public class MainActivity extends AppCompatActivity {
         return startFragment(fragment, tag);
     }
 
+    /*
+    Starts the fragment selected, returning true if no problem occurs
+    TODO add try-catch
+     */
     private boolean startFragment(Fragment fragment, String tag) {
         if(fragment != null || fragment==currentFragment) {
 
