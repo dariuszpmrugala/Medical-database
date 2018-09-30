@@ -378,7 +378,8 @@ public class RecordAdapter extends BaseAdapter {
 
 
                 case R.id.record_send:
-                    NetworkUtil.POST("https://127.0.0.1:80", record);
+                    //TODO check sending records works
+                    NetworkUtil.POST("http://127.0.0.1:80", record);
 
                 default:
                     break;

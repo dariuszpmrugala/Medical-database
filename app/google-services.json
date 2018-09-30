@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "672688738908",
+    "firebase_url": "https://patientmd-e4355.firebaseio.com",
+    "project_id": "patientmd-e4355",
+    "storage_bucket": "patientmd-e4355.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672688738908:android:ccb972712abdc28a",
+        "android_client_info": {
+          "package_name": "edu.tamu.ecen.capstone.patientmd"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "672688738908-qgd9k55o3ug0gdb11d2re5sfrq7cro46.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.tamu.ecen.capstone.patientmd",
+            "certificate_hash": "fa64aa7c412096c782b0a754505a556c3496793e"
+          }
+        },
+        {
+          "client_id": "672688738908-sg1bml2ctq14d8ric08v8tf27rqae7jv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.tamu.ecen.capstone.patientmd",
+            "certificate_hash": "c95608253a2420cf422bd6ea8a3f5d2cecf0f9af"
+          }
+        },
+        {
+          "client_id": "672688738908-qurpo02ht314n8bp5tlb8a06nbmo7vbe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAz0EmLJrG2jPQH7G617UWTMVJH2cPlSV0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672688738908-qurpo02ht314n8bp5tlb8a06nbmo7vbe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

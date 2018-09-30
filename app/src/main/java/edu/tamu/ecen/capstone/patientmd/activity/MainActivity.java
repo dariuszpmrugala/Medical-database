@@ -80,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //permissions
+        Util.permissionCamera(this);
+
 
         //todo get dropbox working;
         //FileUtil.initDropbox();
