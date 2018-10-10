@@ -214,7 +214,7 @@ public class NetworkUtil {
         protected String doInBackground(File... file) {
             if (isUploading)
                 return "upload in progress, try again later";
-            
+
 
             String response = sendFile(getUrl(), file[0]);
             Log.d(TAG, response);
