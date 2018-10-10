@@ -1,5 +1,6 @@
 package edu.tamu.ecen.capstone.patientmd.util;
 
+import android.accounts.NetworkErrorException;
 import android.app.Activity;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -7,31 +8,22 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
-import java.nio.file.Files;
-import java.security.cert.Certificate;
+import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLPeerUnverifiedException;
 
 public class NetworkUtil {
 
     public static ConnectivityManager connectivityManager;
-    public static boolean isUploading = false;
+    public static volatile boolean isUploading = false;
+    public static String lastResponse = null;
 
     private static String TAG = "NetworkUtil";
 
@@ -51,6 +43,8 @@ public class NetworkUtil {
     /*
     Check if there has been a connection established
         call getActivity if calling from a fragment, or provide 'this' if calling from activity
+
+        //TODO: figure out if needed - may not need to be fully connected if using local connection
      */
     public static boolean isConnected(Activity activity) {
         boolean connected = false;
@@ -65,11 +59,28 @@ public class NetworkUtil {
         return connected;
     }
 
+    /*
+    POST a file to the server for OCR - should be an image file
+        address: url to connect to including the port number- should be http
+            e.g. http://192.168.0.1:80     */
     public static String POST(String address, File file) {
 
         setUrl(address);
-        new HttpAsyncTask().execute(file);
-        //address = "http://255.255.255.255:80";
+        HttpAsyncTask httpTask = new HttpAsyncTask();
+        httpTask.execute(file);
+
+        String response=null;
+
+        //wait until the response comes through
+        //TODO make this safer...
+        while (response == null) {
+            try {
+                response = httpTask.get(2, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         /*
         HttpURLConnection urlConnection=null;
         try {
@@ -107,7 +118,6 @@ public class NetworkUtil {
             }
         }
 
-
         try {
             Socket socket = new Socket(host, port);
 
@@ -116,11 +126,17 @@ public class NetworkUtil {
         }
         */
 
-        return "because the internet";
+        return response;
     }
 
-    public static String sendFile(String address, File file){
+    public static String sendFile(String address, File file) throws NetworkErrorException {
         Log.d(TAG, "sendFile:: init");
+
+        if (isUploading) {
+            Log.e(TAG, "sendFile:: A file is already being sent to server");
+            throw new NetworkErrorException(address+" is already in use by this app!");
+        }
+        isUploading = true;
 
         //static stuff
         String attachmentName = "image";
@@ -129,7 +145,7 @@ public class NetworkUtil {
         String twoHyphens = "--";
         String boundary =  "*****";
 
-        isUploading = true;
+
 
         try {
             //setup request
@@ -181,7 +197,7 @@ public class NetworkUtil {
             BufferedReader responseStreamReader =
                     new BufferedReader(new InputStreamReader(responseStream));
 
-            String line = "";
+            String line;
             StringBuilder stringBuilder = new StringBuilder();
 
             while ((line = responseStreamReader.readLine()) != null) {
@@ -190,8 +206,6 @@ public class NetworkUtil {
             responseStreamReader.close();
 
             String response = stringBuilder.toString();
-
-
 
             responseStream.close();
             httpUrlConnection.disconnect();
@@ -202,26 +216,43 @@ public class NetworkUtil {
 
         } catch (Exception e) {
             Log.e(TAG, "multipart post error " + e + "(" + address + ")");
+        } finally {
+            isUploading = false;
         }
 
-        return null;
+        return "Request failed";
     }
 
 
-    //TODO: this; need to provide a file to send
     private static class HttpAsyncTask extends AsyncTask<File, Void, String> {
         @Override
         protected String doInBackground(File... file) {
             if (isUploading)
                 return "upload in progress, try again later";
 
+            if (file.length > 1)
+                Log.d(TAG, "Attempting to send multiple files at once is not supported");
 
-            String response = sendFile(getUrl(), file[0]);
-            Log.d(TAG, response);
+            try {
+                String response = sendFile(getUrl(), file[0]);
+                Log.d(TAG, response);
 
-            return response;
+                return response;
+
+            } catch (NetworkErrorException e) {
+                e.printStackTrace();
+                return "NetworkErrorException";
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d(TAG, "HTTP task finished");
+            Log.d(TAG, result);
         }
     }
+
 
 
 }
