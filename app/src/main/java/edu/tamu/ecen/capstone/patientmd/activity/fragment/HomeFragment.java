@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
 import edu.tamu.ecen.capstone.patientmd.util.NetworkUtil;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
@@ -221,7 +222,7 @@ public class HomeFragment extends Fragment {
                  //TODO send file over HTTP now
 
                  //TODO see if uploading new images works
-                 NetworkUtil.POST("http://127.0.0.1:80", new File(mCurrentPhotoPath));
+                 NetworkUtil.POST(Const.HTTP_ADDRESS, new File(mCurrentPhotoPath));
                  AsyncTask.execute(Util.runnableUpdateTable);
              }
             else if (resultCode == Activity.RESULT_CANCELED){
@@ -264,7 +265,7 @@ public class HomeFragment extends Fragment {
                 return;
             }
             //TODO see if HTTP works for existing images
-            NetworkUtil.POST("http://127.0.0.1:80", dest);
+            NetworkUtil.POST(Const.HTTP_ADDRESS, dest);
             try {
                 if(Util.copyFile(src, dest))
                     Toast.makeText(getContext(), "Filename: "+dest.getName(), Toast.LENGTH_LONG).show();

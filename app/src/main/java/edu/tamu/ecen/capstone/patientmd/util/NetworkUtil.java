@@ -73,13 +73,19 @@ public class NetworkUtil {
 
         //wait until the response comes through
         //TODO make this safer...
-        while (response == null) {
+        /*while (response == null) {
             try {
                 response = httpTask.get(2, TimeUnit.SECONDS);
+                if (response.contains("upload success!")) {
+                    Log.d(TAG, "Successful response");
+                    //TODO make Toast to let user know it didn't work
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        */
 
         /*
         HttpURLConnection urlConnection=null;
@@ -172,14 +178,20 @@ public class NetworkUtil {
                     attachmentFileName + "\"" + crlf);
             request.writeBytes(crlf);
 
+            Log.d(TAG, "SendFile:: Content-Disposition: form-data; name=\"" +
+                    attachmentName + "\";filename=\"" +
+                    attachmentFileName + "\"" + crlf);
+
             //get file and write its contents
             int size = (int) file.length();
             byte[] byteMe = new byte[size];
             BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
             buf.read(byteMe, 0, byteMe.length);
+            Log.d(TAG, "Sendfile:: send data length is " + byteMe.length+" B, "+byteMe.length/1024+" KB");
             buf.close();
 
             request.write(byteMe);
+
 
             //end content wrapper
             request.writeBytes(crlf);

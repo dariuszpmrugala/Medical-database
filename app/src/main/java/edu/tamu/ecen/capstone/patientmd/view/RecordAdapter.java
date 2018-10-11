@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
 import edu.tamu.ecen.capstone.patientmd.util.NetworkUtil;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
@@ -379,7 +380,7 @@ public class RecordAdapter extends BaseAdapter {
 
                 case R.id.record_send:
                     //TODO check sending records works
-                    NetworkUtil.POST("http://127.0.0.1:80", record);
+                    NetworkUtil.POST(Const.HTTP_ADDRESS, record);
 
                 default:
                     break;
