@@ -23,7 +23,8 @@ public class Const {
 
     public static final double RECORD_VIEW_SCALE = 2.5;
 
-    public static final String HTTP_ADDRESS = "http://10.236.36.56:8000";
+    public static final String HTTP_ADDRESS = "http://10.236.37.153";
+    public static final String HTTP_PORT = "8000";
 
 
 

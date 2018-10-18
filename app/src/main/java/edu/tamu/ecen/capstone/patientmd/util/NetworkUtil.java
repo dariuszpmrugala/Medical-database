@@ -2,21 +2,27 @@ package edu.tamu.ecen.capstone.patientmd.util;
 
 import android.accounts.NetworkErrorException;
 import android.app.Activity;
+import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
 
 
 public class NetworkUtil {
@@ -28,6 +34,7 @@ public class NetworkUtil {
     private static String TAG = "NetworkUtil";
 
     private static String url;
+    private static String port;
 
     public static String getUrl() {
         if (url==null)
@@ -36,8 +43,13 @@ public class NetworkUtil {
         return url;
     }
 
-    public static void setUrl(String url) {
+    public static String getPort() {
+        return port;
+    }
+
+    public static void setUrl(String url, String port) {
         NetworkUtil.url = url;
+        NetworkUtil.port = port;
     }
 
     /*
@@ -63,10 +75,10 @@ public class NetworkUtil {
     POST a file to the server for OCR - should be an image file
         address: url to connect to including the port number- should be http
             e.g. http://192.168.0.1:80     */
-    public static String POST(String address, File file) {
+    public static String POST(String address, String port, File file, Context context) {
 
-        setUrl(address);
-        HttpAsyncTask httpTask = new HttpAsyncTask();
+        setUrl(address, port);
+        HttpAsyncTask httpTask = new HttpAsyncTask(context);
         httpTask.execute(file);
 
         String response=null;
@@ -135,7 +147,7 @@ public class NetworkUtil {
         return response;
     }
 
-    public static String sendFile(String address, File file) throws NetworkErrorException {
+    public static String sendFile(String address, String port, File file) throws NetworkErrorException {
         Log.d(TAG, "sendFile:: init");
 
         if (isUploading) {
@@ -157,7 +169,7 @@ public class NetworkUtil {
             //setup request
             Log.d(TAG, "sendFile:: make HTTP connection");
             HttpURLConnection httpUrlConnection = null;
-            URL url = new URL(address);
+            URL url = new URL(address+":"+port);
             httpUrlConnection = (HttpURLConnection) url.openConnection();
             httpUrlConnection.setUseCaches(false);
             httpUrlConnection.setDoOutput(true);
@@ -218,6 +230,40 @@ public class NetworkUtil {
             responseStreamReader.close();
 
             String response = stringBuilder.toString();
+            int rCode = httpUrlConnection.getResponseCode();
+            Log.d(TAG, "sendFile:: response code: " + rCode);
+
+
+            File csv = null;
+            if (rCode == 200) {
+
+                while (csv==null) {
+                    httpUrlConnection.disconnect();
+
+                    httpUrlConnection = (HttpURLConnection) url.openConnection();
+                    httpUrlConnection.setRequestMethod("GET");
+                    httpUrlConnection.setConnectTimeout(10000);
+                    httpUrlConnection.setReadTimeout(10000);
+
+                    httpUrlConnection.connect();
+
+                    int responseCode = httpUrlConnection.getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+                        line=null;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line + "\n");
+                        }
+                        br.close();
+                        Log.d(TAG, "sendFile:: received from GET: " + sb.toString());
+                        break;  //TODO create the actual file
+                    }
+
+                }
+
+            }
+
 
             responseStream.close();
             httpUrlConnection.disconnect();
@@ -236,7 +282,14 @@ public class NetworkUtil {
     }
 
 
-    private static class HttpAsyncTask extends AsyncTask<File, Void, String> {
+    private static class HttpAsyncTask extends AsyncTask<File, String, String> {
+
+        Context context;
+
+        protected HttpAsyncTask(Context mContext) {
+            context = mContext;
+        }
+
         @Override
         protected String doInBackground(File... file) {
             if (isUploading)
@@ -246,23 +299,181 @@ public class NetworkUtil {
                 Log.d(TAG, "Attempting to send multiple files at once is not supported");
 
             try {
-                String response = sendFile(getUrl(), file[0]);
-                Log.d(TAG, response);
+                String address = getUrl();
+                String port = getPort();
+                File f = file[0];
+                Log.d(TAG, "sendFile:: init");
 
+                if (isUploading) {
+                    Log.e(TAG, "sendFile:: A file is already being sent to server");
+                }
+                isUploading = true;
+
+                //static stuff
+                String attachmentName = "image";
+                String attachmentFileName = file[0].getName();
+                String crlf = "\r\n";
+                String twoHyphens = "--";
+                String boundary =  "*****";
+
+
+
+                //setup request
+                Log.d(TAG, "sendFile:: make HTTP connection");
+                HttpURLConnection httpUrlConnection = null;
+                URL url = new URL(address+":"+port);
+                httpUrlConnection = (HttpURLConnection) url.openConnection();
+                httpUrlConnection.setUseCaches(false);
+                httpUrlConnection.setDoOutput(true);
+
+                httpUrlConnection.setRequestMethod("POST");
+                httpUrlConnection.setRequestProperty("Connection", "Keep-Alive");
+                httpUrlConnection.setRequestProperty("Cache-Control", "no-cache");
+                httpUrlConnection.setRequestProperty(
+                        "Content-Type", "multipart/form-data;boundary=" + boundary);
+
+                //start content wrapper
+                DataOutputStream request = new DataOutputStream(
+                        httpUrlConnection.getOutputStream());
+
+                request.writeBytes(twoHyphens + boundary + crlf);
+                request.writeBytes("Content-Disposition: form-data; name=\"" +
+                        attachmentName + "\";filename=\"" +
+                        attachmentFileName + "\"" + crlf);
+                request.writeBytes(crlf);
+
+                Log.d(TAG, "SendFile:: Content-Disposition: form-data; name=\"" +
+                        attachmentName + "\";filename=\"" +
+                        attachmentFileName + "\"" + crlf);
+
+                //get file and write its contents
+                int size = (int) f.length();
+                byte[] byteMe = new byte[size];
+                BufferedInputStream buf = new BufferedInputStream(new FileInputStream(f));
+                buf.read(byteMe, 0, byteMe.length);
+                Log.d(TAG, "Sendfile:: send data length is " + byteMe.length+" B, "+byteMe.length/1024+" KB");
+                buf.close();
+
+                request.write(byteMe);
+
+
+                //end content wrapper
+                request.writeBytes(crlf);
+                request.writeBytes(twoHyphens + boundary +
+                        twoHyphens + crlf);
+
+                //flush output buffer
+                request.flush();
+                request.close();
+
+                //get response
+                InputStream responseStream = new
+                        BufferedInputStream(httpUrlConnection.getInputStream());
+
+                BufferedReader responseStreamReader =
+                        new BufferedReader(new InputStreamReader(responseStream));
+
+                String line;
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ((line = responseStreamReader.readLine()) != null) {
+                    stringBuilder.append(line).append("\n");
+                }
+                responseStreamReader.close();
+
+                String response = stringBuilder.toString();
+                int rCode = httpUrlConnection.getResponseCode();
+                Log.d(TAG, "SendFile:: response code: " + rCode);
+
+
+                File csv = null;
+                int reqCount = 0;
+                if (rCode == 200) {
+                    Log.d(TAG, "POST worked, now sending GETs");
+
+                    publishProgress(response);
+                    String newAddress = address + ":" + port + "/" + f.getName();
+                    Log.d(TAG, "GET from " + newAddress);
+                    URL requestURL = new URL(newAddress);
+
+                    //TODO provide better timeout stuff
+                    while (csv==null && reqCount < 10) {
+                        httpUrlConnection.disconnect();
+
+                        httpUrlConnection = (HttpURLConnection) requestURL.openConnection();
+
+                        //httpUrlConnection.connect();
+
+                        int responseCode = httpUrlConnection.getResponseCode();
+                        Log.d(TAG, "sendFile:: Get request "+reqCount + " received " +responseCode);
+                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                            //BufferedReader br = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream()));
+                            InputStream input = httpUrlConnection.getInputStream();
+                            Log.d(TAG, f.getName());
+                            String rawName = f.getName().split("\\.")[0];
+                            String csvPath = Util.getDataFilepath() + "/" + rawName + ".jpg"; //todo change this to csv
+                            csv = new File(csvPath);
+                            FileOutputStream output = new FileOutputStream(csvPath);
+
+                            byte data[] = new byte[4096];
+                            int count;
+                            while ((count = input.read(data)) != -1) {
+                                // allow canceling with back button
+                                if (isCancelled()) {
+                                    input.close();
+                                    return null;
+                                }
+                                output.write(data, 0, count);
+                            }
+
+                            Log.d(TAG, "sendFile:: received from GET: " + csv.exists());
+
+                            break;
+                        }
+
+                        reqCount++;
+                    }
+
+
+                }
+
+
+                responseStream.close();
+                httpUrlConnection.disconnect();
+
+                isUploading = false;
                 return response;
 
-            } catch (NetworkErrorException e) {
+
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "multipart post error " + e + "(" + url + ")");
+            } catch (Exception e) {
                 e.printStackTrace();
-                return "NetworkErrorException";
+            } finally {
+                isUploading = false;
             }
+
+            return "Request failed";
+
 
         }
 
         @Override
         protected void onPostExecute(String result) {
+            //TODO: make this a file for database to process
             Log.d(TAG, "HTTP task finished");
             Log.d(TAG, result);
         }
+
+        @Override
+        protected void onProgressUpdate(String... response) {
+            Log.d(TAG, "ProgressUpdate:: Received from server:\n" + response[0]);
+            //give user update on how their upload went
+            String ok = response[0].contains("upload success!") ? "success" : "failure";
+
+            Toast.makeText(context, "Upload result: " + ok, Toast.LENGTH_LONG).show();
+        }
+
     }
 
 

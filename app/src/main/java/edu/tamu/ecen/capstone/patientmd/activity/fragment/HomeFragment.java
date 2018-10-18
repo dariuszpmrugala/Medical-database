@@ -222,7 +222,7 @@ public class HomeFragment extends Fragment {
                  //TODO send file over HTTP now
 
                  //TODO see if uploading new images works
-                 NetworkUtil.POST(Const.HTTP_ADDRESS, new File(mCurrentPhotoPath));
+                 NetworkUtil.POST(Const.HTTP_ADDRESS, Const.HTTP_PORT,  new File(mCurrentPhotoPath), getContext());
                  AsyncTask.execute(Util.runnableUpdateTable);
              }
             else if (resultCode == Activity.RESULT_CANCELED){
@@ -265,7 +265,7 @@ public class HomeFragment extends Fragment {
                 return;
             }
             //TODO see if HTTP works for existing images
-            NetworkUtil.POST(Const.HTTP_ADDRESS, dest);
+            NetworkUtil.POST(Const.HTTP_ADDRESS, Const.HTTP_PORT, dest, getContext());
             try {
                 if(Util.copyFile(src, dest))
                     Toast.makeText(getContext(), "Filename: "+dest.getName(), Toast.LENGTH_LONG).show();

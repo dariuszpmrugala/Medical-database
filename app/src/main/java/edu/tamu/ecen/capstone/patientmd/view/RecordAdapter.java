@@ -380,7 +380,7 @@ public class RecordAdapter extends BaseAdapter {
 
                 case R.id.record_send:
                     //TODO check sending records works
-                    NetworkUtil.POST(Const.HTTP_ADDRESS, record);
+                    NetworkUtil.POST(Const.HTTP_ADDRESS, Const.HTTP_PORT, record, mContext);
 
                 default:
                     break;
