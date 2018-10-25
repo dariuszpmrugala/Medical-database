@@ -41,4 +41,11 @@
         app:showAsAction="never"/>
 
 
+    <item
+        android:id="@+id/record_send"
+        android:title="@string/record_send"
+        android:enabled="true"
+        app:showAsAction="never"/>
+
+
 </menu>

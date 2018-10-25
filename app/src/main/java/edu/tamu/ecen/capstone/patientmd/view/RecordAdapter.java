@@ -33,7 +33,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
+import edu.tamu.ecen.capstone.patientmd.util.NetworkUtil;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 import static edu.tamu.ecen.capstone.patientmd.util.Const.RECORD_VIEW_SCALE;
@@ -375,6 +377,11 @@ public class RecordAdapter extends BaseAdapter {
                     builder.show();
                     break;
 
+
+                case R.id.record_send:
+                    //TODO check sending records works
+                    NetworkUtil.POST(Const.HTTP_ADDRESS, Const.HTTP_PORT, record, mContext);
+
                 default:
                     break;
 
@@ -419,8 +426,5 @@ public class RecordAdapter extends BaseAdapter {
             options = (ImageButton) view.findViewById(R.id.record_info_button);
         }
     }
-
-
-
 
 }
