@@ -1,0 +1,294 @@
+/*
+
+TODO: make this a fragment maybe? probably need to integrate these functions more directly
+ */
+
+
+package edu.tamu.ecen.capstone.patientmd.activity;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.app.AlertDialog;
+import android.database.Cursor;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import edu.tamu.ecen.capstone.patientmd.database.*;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.util.MedicalSample;
+
+public class DatabaseActivity extends AppCompatActivity {
+
+    private DatabaseHelper myDb;
+    private EditText editID, editDate, editTests, editResult, editUnits, editReference_Interval, editField, editText;
+    private Button btnAdd, btnView, btnDelete, btnUpdate, btnQuery;
+    private List<MedicalSample> medical_samples = new ArrayList<>();
+    private List<DatabaseEntry> entries = new ArrayList<>();
+    private DatabaseReference rootRef;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_database);
+
+        myDb = new DatabaseHelper(this);
+
+        editID = findViewById(R.id.editText_id);
+        editDate = findViewById(R.id.editText_date);
+        editTests = findViewById(R.id.editText_tests);
+        editResult = findViewById(R.id.editText_result);
+        editUnits = findViewById(R.id.editText_units);
+        editReference_Interval = findViewById(R.id.editText_reference_interval);
+        editField = findViewById(R.id.editText_field);
+        editText = findViewById(R.id.editText_text);
+
+        btnAdd = findViewById(R.id.button_add);
+        btnView = findViewById(R.id.button_view);
+        btnUpdate = findViewById(R.id.button_update);
+        btnDelete = findViewById(R.id.button_delete);
+        btnQuery = findViewById(R.id.button_query);
+
+        rootRef = FirebaseDatabase.getInstance().getReference();
+
+
+//        AddData();
+//        ViewAll();
+//        UpdateData();
+//        DeleteData();
+//        QueryData();
+    }
+
+    private void ReadMedicalData() {
+        InputStream is = getResources().openRawResource(R.raw.data);
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(is, Charset.forName("UTF-8"))
+        );
+
+        String line = "";
+
+        medical_samples.clear();
+
+        try {
+            reader.readLine();
+
+            while ( (line = reader.readLine()) != null) {
+                String[] tokens = line.split(",");
+
+                MedicalSample sample = new MedicalSample();
+                sample.setDate(tokens[0]);
+                sample.setTests(tokens[1]);
+
+                if (tokens[2].length() > 0)
+                    sample.setResult(tokens[2]);
+                else sample.setResult("NA");
+
+                if (tokens[3].length() > 0)
+                    sample.setUnits(tokens[3]);
+                else
+                    sample.setUnits("NA");
+
+                if (tokens[4].length() > 0 && tokens.length >= 5)
+                    sample.setReference_interval(tokens[4]);
+                else
+                    sample.setReference_interval("NA");
+
+                medical_samples.add(sample);
+            }
+        } catch (IOException e) {
+            Log.wtf("DatabaseActivity", "Error reading data file on line " + line, e);
+            e.printStackTrace();
+        }
+    }
+
+    public void DeleteData() {
+        btnDelete.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Integer deletedRows = 0;
+
+                        if (editID.getText().toString().matches("") || editID.getText().toString().matches("ID")) {
+                            deletedRows = myDb.deleteAllData();
+                        }
+
+                        else {
+                            deletedRows = myDb.deleteData(editID.getText().toString());
+                        }
+
+//                        if (deletedRows > 0)
+//                            Toast.makeText(DatabaseActivity.this, "Data Deleted", Toast.LENGTH_LONG).show();
+//                        else
+//                            Toast.makeText(DatabaseActivity.this, "Data not Deleted", Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    public void UpdateData() {
+        btnUpdate.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean isUpdate = myDb.updateData(editID.getText().toString(),
+                                editDate.getText().toString(),
+                                editTests.getText().toString(),
+                                editResult.getText().toString(),
+                                editUnits.getText().toString(),
+                                editReference_Interval.getText().toString());
+//                        if(isUpdate)
+//                            Toast.makeText(DatabaseActivity.this,"Data Update",Toast.LENGTH_LONG).show();
+//                        else
+//                            Toast.makeText(DatabaseActivity.this,"Data not Updated",Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    public void AddData() {
+        btnAdd.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean isInserted = false;
+
+                        if (editDate.getText().toString().matches("") || editDate.getText().toString().matches("DATE")
+                                || editTests.getText().toString().matches("") || editTests.getText().toString().matches("TESTS")
+                                || editResult.getText().toString().matches("") || editResult.getText().toString().matches("RESULT")
+                                || editUnits.getText().toString().matches("") || editUnits.getText().toString().matches("UNITS")
+                                || editReference_Interval.getText().toString().matches("") || editReference_Interval.getText().toString().matches("REFERENCE INTERVAL")) {
+
+                            ReadMedicalData();
+
+                            boolean added[] = new boolean[medical_samples.size()];
+
+                            for (int i = 0; i < medical_samples.size(); ++i) {
+                                isInserted = myDb.insertData(
+                                        medical_samples.get(i).getDate(),
+                                        medical_samples.get(i).getTests(),
+                                        medical_samples.get(i).getResult(),
+                                        medical_samples.get(i).getUnits(),
+                                        medical_samples.get(i).getReference_interval()
+                                );
+
+                                added[i] = isInserted;
+                            }
+
+                            isInserted = true;
+                            for (int i = 0; i < added.length; ++i) {
+                                if (!added[i])
+                                    isInserted = false;
+                            }
+
+                        }
+
+                        else {
+                            isInserted = myDb.insertData(editDate.getText().toString(),
+                                    editTests.getText().toString(),
+                                    editResult.getText().toString(),
+                                    editUnits.getText().toString(),
+                                    editReference_Interval.getText().toString());
+                        }
+
+                        //if (isInserted)
+                        //    Toast.makeText(DatabaseActivity.this, "Data Inserted", Toast.LENGTH_LONG).show();
+                        //else
+                        //   Toast.makeText(DatabaseActivity.this, "Data not Inserted", Toast.LENGTH_LONG).show();
+
+                    }
+                }
+        );
+    }
+
+    public void ViewAll() {
+        btnView.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Cursor res = myDb.getAllData();
+                        if(res.getCount() == 0) {
+                            // show message
+                            ShowMessage("Error","Nothing found");
+                            return;
+                        }
+
+                        StringBuffer buffer = new StringBuffer();
+                        while (res.moveToNext()) {
+                            buffer.append("ID :"+ res.getString(0)+"\n");
+                            buffer.append("DATE :"+ res.getString(1)+"\n");
+                            buffer.append("TESTS :"+ res.getString(2)+"\n");
+                            buffer.append("RESULT :"+ res.getString(3)+"\n");
+                            buffer.append("UNITS :"+ res.getString(4)+"\n");
+                            buffer.append("REFERENCE INTERVAL :"+ res.getString(5)+"\n\n");
+                        }
+
+                        // Show all data
+                        ShowMessage("Data",buffer.toString());
+                    }
+                }
+        );
+    }
+
+    public void QueryData() {
+        btnQuery.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Cursor res = myDb.getAllData();
+                        if(res.getCount() == 0) {
+                            myDb.pullData();
+                            // show message
+                            ShowMessage("Error","Nothing found");
+                            return;
+                        }
+
+                        entries.clear();
+                        entries = myDb.queryData(editField.getText().toString(), editText.getText().toString());
+
+                        if(entries.size() == 0) {
+                            // show message
+                            ShowMessage("Error","Nothing found");
+                            return;
+                        }
+
+                        StringBuffer buffer = new StringBuffer();
+                        for (int i = 0; i < entries.size(); ++i) {
+                            buffer.append("ID :"+ entries.get(i).getId()+"\n");
+                            buffer.append("DATE :"+ entries.get(i).getDate()+"\n");
+                            buffer.append("TESTS :"+ entries.get(i).getTests()+"\n");
+                            buffer.append("RESULT :"+ entries.get(i).getResult()+"\n");
+                            buffer.append("UNITS :"+ entries.get(i).getUnits()+"\n");
+                            buffer.append("REFERENCE INTERVAL :"+ entries.get(i).getReference_interval()+"\n\n");
+                        }
+
+                        // Show all data
+                        ShowMessage("Data",buffer.toString());
+                    }
+                }
+        );
+    }
+
+    public void ShowMessage(String title,String Message){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setTitle(title);
+        builder.setMessage(Message);
+        builder.show();
+    }
+
+}
