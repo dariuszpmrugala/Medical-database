@@ -402,12 +402,9 @@ public class NetworkUtil {
 
                         httpUrlConnection = (HttpURLConnection) requestURL.openConnection();
 
-                        //httpUrlConnection.connect();
-
                         int responseCode = httpUrlConnection.getResponseCode();
                         Log.d(TAG, "sendFile:: Get request "+reqCount + " received " +responseCode);
                         if (responseCode == HttpURLConnection.HTTP_OK) {
-                            //BufferedReader br = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream()));
                             InputStream input = httpUrlConnection.getInputStream();
                             Log.d(TAG, f.getName());
                             String rawName = f.getName().split("\\.")[0];
