@@ -410,7 +410,7 @@ public class NetworkUtil {
                             String rawName = f.getName().split("\\.")[0];
                             String csvPath = Util.getDataFilepath() + "/" + rawName + ".jpg"; //todo change this to csv
                             csv = new File(csvPath);
-                            FileOutputStream output = new FileOutputStream(csvPath);
+                            FileOutputStream output = new FileOutputStream(csv, false);
 
                             byte data[] = new byte[4096];
                             int count;
