@@ -45,7 +45,9 @@ import java.util.Set;
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.database.DatabaseEntry;
 import edu.tamu.ecen.capstone.patientmd.database.DatabaseHelper;
+import edu.tamu.ecen.capstone.patientmd.util.Const;
 import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
+import edu.tamu.ecen.capstone.patientmd.util.NetworkUtil;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 
@@ -624,30 +626,6 @@ public class HomeFragment extends Fragment {
         });
 
 
-        /*
-        //todo remove after done testing dropbox
-        Button dbTestButton = view.findViewById(R.id.dropbox_test_button);
-        dbTestButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Util.permissionInternet(getActivity());
-                AsyncTask.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        File [] files = Util.getFilesInDir();
-
-                        FileUtil.initDropbox();
-
-                        FileUtil.dropboxUploadAllRecords(files);
-
-                        FileUtil.dropboxDownload("/data/", ".csv");
-                    }
-                });
-            }
-
-        });
-        */
-
 
     }
 
@@ -696,6 +674,7 @@ public class HomeFragment extends Fragment {
                          .show();
 
                  //ToDo: anything that requires the picture as soon as it is taken
+                 NetworkUtil.POST(Const.ADDRESS, Const.PORT, new File(mCurrentPhotoPath), getContext());
                  AsyncTask.execute(Util.runnableUpdateTable);
              }
             else if (resultCode == Activity.RESULT_CANCELED){
@@ -743,7 +722,9 @@ public class HomeFragment extends Fragment {
             } catch (IOException ex) {
                 Log.e(TAG, "Existing file:: error copying to "+filePath, ex);
             }
-            //TODO anything that requires updating due to new record
+
+            //TODO anything needed whenever new record is created
+            NetworkUtil.POST(Const.ADDRESS, Const.PORT, dest, getContext());
             //update the hash table that holds all bitmaps for the files in app storage
             AsyncTask.execute(Util.runnableUpdateTable);
 
