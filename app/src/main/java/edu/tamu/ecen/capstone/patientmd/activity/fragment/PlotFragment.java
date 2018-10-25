@@ -59,13 +59,11 @@ public class PlotFragment extends Fragment {
 
     private DatabaseHelper myDb;
     private Spinner spinner_tests;
-    private TextView textView_date_low;
-    private TextView textView_date_high;
+    private Spinner spinner_dates;
     private GraphView line_chart;
     private PlotField plot_field;
     private Button lowDateBtn;
     private Button highDateBtn;
-    private Button plotBtn;
 
     static final int date_low_id = 0;
     static final int date_high_id = 1;
@@ -96,21 +94,40 @@ public class PlotFragment extends Fragment {
         myDb = new DatabaseHelper(getContext());
 
         spinner_tests = view.findViewById(R.id.spinner_tests);
-        textView_date_low = view.findViewById(R.id.textView_date_low);
-        textView_date_high = view.findViewById(R.id.textView_date_high);
+        spinner_dates = view.findViewById(R.id.spinner_dates);
         line_chart = view.findViewById(R.id.line_chart);
 
         lowDateBtn = view.findViewById(R.id.button_date_low);
         highDateBtn = view.findViewById(R.id.button_date_high);
-        plotBtn = view.findViewById(R.id.button_plot);
 
         plot_field = new PlotField();
 
         setListeners(view);
 
-        Spinner();
+        String first_test = SpinnerTests();
+        SpinnerDates();
         DateHigh();
         DateLow();
+
+        // set default plot fields
+        Date low_date = new Date();
+        Date high_date = new Date();
+
+        SimpleDateFormat format = new SimpleDateFormat("M/dd/yyyy", Locale.US);
+        Calendar calendar = Calendar.getInstance();
+        high_date = calendar.getTime();
+        calendar.add(Calendar.MONTH, -6);
+        low_date = calendar.getTime();
+
+        lowDateBtn.setText(format.format(low_date));
+        plot_field.setDate_low(format.format(low_date));
+        highDateBtn.setText(format.format(high_date));
+        plot_field.setDate_high(format.format(high_date));
+
+        plot_field.setTest(first_test);
+
+        // plot default plot
+        Plot(view);
 
     }
 
@@ -201,7 +218,7 @@ public class PlotFragment extends Fragment {
             double y_max;
 
             if(entries.size() == 0) {
-                ShowMessage("Data To Plot", "No Data Found");
+                //ShowMessage("Data To Plot", "No Data Found");
             }
             else {
                 String[] dates = new String[entries.size()];
@@ -241,8 +258,8 @@ public class PlotFragment extends Fragment {
                 }
 
                 line_chart.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getContext()));
-                line_chart.getGridLabelRenderer().setNumHorizontalLabels(5);
-                line_chart.getGridLabelRenderer().setNumVerticalLabels(5);
+                line_chart.getGridLabelRenderer().setNumHorizontalLabels(4);
+                line_chart.getGridLabelRenderer().setNumVerticalLabels(8);
                 line_chart.getGridLabelRenderer().setTextSize(35f);
                 line_chart.getGridLabelRenderer().reloadStyles();
                 line_chart.getGridLabelRenderer().setHumanRounding(false);
@@ -309,17 +326,12 @@ public class PlotFragment extends Fragment {
                 Log.d("max", String.valueOf(y_max));
 
                 line_chart.getViewport().setScalable(true);
-                line_chart.getViewport().setScalableY(true);
                 line_chart.getViewport().setScrollable(true);
-                line_chart.getViewport().setScrollableY(true);
-                line_chart.getViewport().setScalable(true);
-                line_chart.getViewport().setScalableY(true);
                 line_chart.getLegendRenderer().setVisible(true);
-
                 line_chart.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
 
 
-                ShowMessage("Data To Plot", buffer.toString());
+                //ShowMessage("Data To Plot", buffer.toString());
             }
 
         }
@@ -371,18 +383,57 @@ public class PlotFragment extends Fragment {
 
     }
 
-    public void Spinner() {
+    public String SpinnerTests() {
         if (myDb==null)
         Log.d(TAG, "FUCK DB");
         Set<String> items = myDb.getAllField("tests");
-        String[] items_strings = new String[items.size()];
 
-        Iterator it = items.iterator();
-        int i = 0;
-        while(it.hasNext()) {
-            items_strings[i] = it.next().toString();
-            ++i;
+        if (items.size() != 0) {
+            String[] items_strings = new String[items.size()];
+
+            Iterator it = items.iterator();
+            int i = 0;
+            while (it.hasNext()) {
+                items_strings[i] = it.next().toString();
+                ++i;
+            }
+
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
+                    android.R.layout.simple_spinner_item, items_strings);
+
+
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+            spinner_tests.setAdapter(adapter);
+            spinner_tests.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view,
+                                           int position, long id) {
+                    plot_field.setTest(parent.getItemAtPosition(position).toString());
+                    Plot(view);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    // TODO Auto-generated method stub
+                }
+            });
+
+            return items_strings[0];
+
         }
+
+        else return "First Test";
+    }
+
+    public void SpinnerDates() {
+        String[] items_strings = new String[5];
+        items_strings[0] = "past 6 months";
+        items_strings[1] = "past 1 year";
+        items_strings[2] = "past 3 years";
+        items_strings[3] = "past 5 years";
+        items_strings[4] = "past 10 years";
 
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
@@ -391,12 +442,50 @@ public class PlotFragment extends Fragment {
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        spinner_tests.setAdapter(adapter);
-        spinner_tests.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinner_dates.setAdapter(adapter);
+        spinner_dates.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
-                plot_field.setTest(parent.getItemAtPosition(position).toString());
+
+                Date low_date = new Date();
+                Date high_date = new Date();
+
+                SimpleDateFormat format = new SimpleDateFormat("M/dd/yyyy", Locale.US);
+                Calendar calendar = Calendar.getInstance();
+                high_date = calendar.getTime();
+
+                switch(position) {
+                    case 0:
+                        calendar.add(Calendar.MONTH, -6);
+                        low_date = calendar.getTime();
+                        break;
+                    case 1:
+                        calendar.add(Calendar.YEAR, -1);
+                        low_date = calendar.getTime();
+                        break;
+                    case 2:
+                        calendar.add(Calendar.YEAR, -3);
+                        low_date = calendar.getTime();
+                        break;
+                    case 3:
+                        calendar.add(Calendar.YEAR, -5);
+                        low_date = calendar.getTime();
+                        break;
+                    case 4:
+                        calendar.add(Calendar.YEAR, -10);
+                        low_date = calendar.getTime();
+                        break;
+                    default:
+                        break;
+                }
+
+                lowDateBtn.setText(format.format(low_date));
+                plot_field.setDate_low(format.format(low_date));
+                highDateBtn.setText(format.format(high_date));
+                plot_field.setDate_high(format.format(high_date));
+
+                Plot(view);
             }
 
             @Override
@@ -411,8 +500,9 @@ public class PlotFragment extends Fragment {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int day) {
                 Calendar cal = new GregorianCalendar(year, month, day);
-                textView_date_high.setText(android.text.format.DateFormat.format("M/dd/yyyy", cal.getTime()).toString());
+                highDateBtn.setText(android.text.format.DateFormat.format("M/dd/yyyy", cal.getTime()).toString());
                 plot_field.setDate_high(android.text.format.DateFormat.format("M/dd/yyyy", cal.getTime()).toString());
+                Plot(view);
             }
         };
     }
@@ -422,8 +512,9 @@ public class PlotFragment extends Fragment {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int day) {
                 Calendar cal = new GregorianCalendar(year, month, day);
-                textView_date_low.setText(android.text.format.DateFormat.format("M/dd/yyyy", cal.getTime()).toString());
+                lowDateBtn.setText(android.text.format.DateFormat.format("M/dd/yyyy", cal.getTime()).toString());
                 plot_field.setDate_low(android.text.format.DateFormat.format("M/dd/yyyy", cal.getTime()).toString());
+                Plot(view);
             }
         };
     }
@@ -455,16 +546,6 @@ public class PlotFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         HighDatePicker(v);
-
-                    }
-                }
-        );
-
-        plotBtn.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Plot(v);
 
                     }
                 }

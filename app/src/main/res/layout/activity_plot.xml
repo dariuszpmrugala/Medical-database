@@ -4,61 +4,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/grey_background"
     tools:context="edu.tamu.ecen.capstone.patientmd.activity.fragment.PlotFragment">
 
     <Spinner
         android:id="@+id/spinner_tests"
-        android:layout_width="200dp"
+        android:layout_width="170dp"
         android:layout_height="40dp" />
+
+    <TextView
+        android:id="@+id/dash"
+        android:layout_width="15dp"
+        android:layout_height="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/button_date_high"
+        app:layout_constraintTop_toTopOf="@+id/button_date_low"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="73dp"
+        android:text="-"
+        android:textSize="21sp"
+        android:textStyle="bold"/>
+
+    <Spinner
+        android:id="@+id/spinner_dates"
+        android:layout_width="170dp"
+        android:layout_height="40dp"
+        app:layout_constraintStart_toEndOf="@+id/spinner_tests"
+        android:layout_marginLeft="20dp"/>
 
     <Button
         android:id="@+id/button_date_low"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Low Date"
-        app:layout_constraintStart_toEndOf="@+id/spinner_tests" />
+        style="@android:style/Widget.Material.Light.Button.Borderless"
+        android:layout_width="85dp"
+        android:layout_height="35dp"
+        android:text="Start Date"
+        app:layout_constraintStart_toEndOf="@+id/spinner_tests"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_tests"
+        android:textSize="10sp" />
 
     <Button
         android:id="@+id/button_date_high"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="High Date"
-        app:layout_constraintStart_toEndOf="@+id/button_date_low" />
+        style="@android:style/Widget.Material.Button.Borderless"
+        android:layout_width="85dp"
+        android:layout_height="35dp"
+        android:text="End Date"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@+id/button_date_low"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_tests" />
 
-    <Button
-        android:id="@+id/button_plot"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="160dp"
-        android:layout_marginTop="16dp"
-        android:text="Plot"
-        app:layout_constraintStart_toStartOf="@+id/spinner_tests"
-        app:layout_constraintTop_toBottomOf="@+id/line_chart" />
-
-    <TextView
-        android:id="@+id/textView_date_low"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:text="Low Date"
-        app:layout_constraintStart_toStartOf="@+id/button_date_low"
-        app:layout_constraintTop_toBottomOf="@+id/button_date_low" />
-
-    <TextView
-        android:id="@+id/textView_date_high"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:text="High Date"
-        app:layout_constraintStart_toStartOf="@+id/button_date_high"
-        app:layout_constraintTop_toBottomOf="@+id/button_date_high" />
 
     <com.jjoe64.graphview.GraphView
         android:id="@+id/line_chart"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
-        android:layout_marginTop="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_date_low"></com.jjoe64.graphview.GraphView>
+        android:layout_height="400dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_dates"></com.jjoe64.graphview.GraphView>
 
 </android.support.constraint.ConstraintLayout>

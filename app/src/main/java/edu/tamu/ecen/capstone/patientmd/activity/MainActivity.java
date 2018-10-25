@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.Button;
@@ -80,13 +81,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //permissions
-        Util.permissionCamera(this);
-
 
         //todo get dropbox working;
         //FileUtil.initDropbox();
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
     }
 
     /*

@@ -72,8 +72,6 @@ public class PlotActivity extends AppCompatActivity {
 
         myDb = new DatabaseHelper(this);
         spinner_tests = findViewById(R.id.spinner_tests);
-        textView_date_low = findViewById(R.id.textView_date_low);
-        textView_date_high = findViewById(R.id.textView_date_high);
         line_chart = findViewById(R.id.line_chart);
         plot_field = new PlotField();
 
