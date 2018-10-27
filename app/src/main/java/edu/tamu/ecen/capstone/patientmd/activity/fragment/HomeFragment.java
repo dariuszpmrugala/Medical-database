@@ -636,6 +636,7 @@ public class HomeFragment extends Fragment {
         Provides a file for the picture to actually go to
      */
     private void dispatchTakePictureIntent() {
+        //todo make sure permission is not causing app to crash
         Util.permissionCamera(getActivity());
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent

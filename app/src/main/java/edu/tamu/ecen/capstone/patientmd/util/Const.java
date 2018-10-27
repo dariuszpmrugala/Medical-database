@@ -6,7 +6,7 @@ import android.os.Environment;
 
 import java.io.File;
 
-/**
+ /**
  * Created by reesul on 2/27/2018.
  * Store constant values here
  */
@@ -24,8 +24,8 @@ public class Const {
     public static final double RECORD_VIEW_SCALE = 2.5;
 
 
-    public static final String ADDRESS = "10.235.12.123";
-    public static final String PORT = "1000";
+    public static final String ADDRESS = "http://10.230.227.241";
+    public static final String PORT = "8000";
 
 
 

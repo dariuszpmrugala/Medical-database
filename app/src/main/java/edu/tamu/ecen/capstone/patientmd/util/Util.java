@@ -132,9 +132,11 @@ public class Util {
     @return: true if permission granted
      */
     public static boolean permissionCamera(Activity activity) {
+        //todo fix so that app does not crash when asking for permission
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(activity, new String[] {Manifest.permission.CAMERA}, Const.PERMISSION_CAMERA_CODE);
+            while (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED);
 
             return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
         }

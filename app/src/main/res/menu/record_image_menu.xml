@@ -23,6 +23,12 @@
         app:showAsAction="never"/>
 
     <item
+        android:id="@+id/record_download"
+        android:title="@string/record_download"
+        android:enabled="true"
+        app:showAsAction="never"/>
+
+    <item
         android:id="@+id/record_share"
         android:title="@string/record_share"
         android:enabled="true"

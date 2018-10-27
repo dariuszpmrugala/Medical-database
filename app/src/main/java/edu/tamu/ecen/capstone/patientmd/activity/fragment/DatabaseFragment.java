@@ -26,6 +26,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -193,6 +196,8 @@ public class DatabaseFragment extends Fragment {
             e.printStackTrace();
         }
     }
+
+
 
     public void DeleteData() {
         btnDelete.setOnClickListener(
@@ -370,6 +375,62 @@ public class DatabaseFragment extends Fragment {
         builder.show();
     }
 
+
+    /*
+   TODO: see if this actually works; just copying in Jonathan's code here to work for a new csv from OCR server
+       May have some problems since this is to be accessed from another thread
+
+       @param csv: a csv file containing properly parsed results for a lab record
+    */
+    private void ReadRecordCSV(File csv) {
+        Log.d(TAG, "ReadMedicalData:: Begin");
+        //InputStream is = getResources().openRawResource(R.raw.data);
+        if (!csv.getName().contains("csv"))
+            Log.e(TAG, "input csv file is bad!!!");
+
+        String line = "";
+
+        try {
+            InputStream is = new FileInputStream(csv);
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(is, Charset.forName("UTF-8"))
+            );
+
+            medical_samples.clear();
+
+
+            reader.readLine();
+
+            while ( (line = reader.readLine()) != null) {
+                Log.d(TAG, "ReadMedicalDatabase:: " + line);
+                String[] tokens = line.split(",");
+
+                MedicalSample sample = new MedicalSample();
+                sample.setDate(tokens[0]);
+                sample.setTests(tokens[1]);
+
+                if (tokens[2].length() > 0)
+                    sample.setResult(tokens[2]);
+                else sample.setResult("NA");
+
+                if (tokens[3].length() > 0)
+                    sample.setUnits(tokens[3]);
+                else
+                    sample.setUnits("NA");
+
+                if (tokens[4].length() > 0 && tokens.length >= 5)
+                    sample.setReference_interval(tokens[4]);
+                else
+                    sample.setReference_interval("NA");
+
+                medical_samples.add(sample);
+            }
+        } catch (IOException e) {
+            Log.wtf("DatabaseActivity", "Error reading data file on line " + line, e);
+            e.printStackTrace();
+        }
+    }
 
 
 }

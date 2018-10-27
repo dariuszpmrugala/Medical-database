@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import edu.tamu.ecen.capstone.patientmd.database.DatabaseHelper;
 
 
 public class NetworkUtil {
@@ -71,6 +72,17 @@ public class NetworkUtil {
         return connected;
     }
 
+    public static String GET(String address, String port, File file, Context context) {
+        setUrl(address, port);
+        HttpGETAsyncTask httpTask = new HttpGETAsyncTask(context);
+
+        httpTask.execute(file);
+
+        return null;
+
+    }
+
+
     /*
     POST a file to the server for OCR - should be an image file
         address: url to connect to including the port number- should be http
@@ -82,67 +94,6 @@ public class NetworkUtil {
         httpTask.execute(file);
 
         String response=null;
-
-        //wait until the response comes through
-        //TODO make this safer...
-        /*while (response == null) {
-            try {
-                response = httpTask.get(2, TimeUnit.SECONDS);
-                if (response.contains("upload success!")) {
-                    Log.d(TAG, "Successful response");
-                    //TODO make Toast to let user know it didn't work
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        */
-
-        /*
-        HttpURLConnection urlConnection=null;
-        try {
-            //setup basic connection
-            URL url = new URL(getUrl());
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            urlConnection.setDoOutput(true);
-            urlConnection.setChunkedStreamingMode(0);
-            urlConnection.setRequestMethod("POST");
-
-            //create streams from
-            OutputStream outHttp = new BufferedOutputStream(urlConnection.getOutputStream());
-            InputStream inHttp  = new BufferedInputStream(urlConnection.getInputStream());
-            FileInputStream fileInputStream = new FileInputStream(file);
-
-            //send the file through a buffer to the output stream (HTTP)
-            byte[] buffer = new byte[1024];
-            int len=0;
-
-            while ((len = fileInputStream.read(buffer)) > 0) {
-                outHttp.write(buffer);
-            }
-            outHttp.close();
-            fileInputStream.close();
-
-
-        } catch (MalformedURLException e) {
-            Log.e(TAG, e.toString());
-        } catch (IOException e) {
-            Log.e(TAG, e.toString());
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-
-        try {
-            Socket socket = new Socket(host, port);
-
-        } catch (IOException e) {
-            Log.e(TAG, e.toString());
-        }
-        */
 
         return response;
     }
@@ -389,15 +340,20 @@ public class NetworkUtil {
                 File csv = null;
                 int reqCount = 0;
                 if (rCode == 200) {
+                    Thread.sleep(35000);
+
                     Log.d(TAG, "POST worked, now sending GETs");
 
                     publishProgress(response);
-                    String newAddress = address + ":" + port + "/" + f.getName();
+
+                    String rawName = f.getName().split("\\.")[0];
+
+                    String newAddress = address + ":" + port + "/" + rawName + ".csv";
                     Log.d(TAG, "GET from " + newAddress);
                     URL requestURL = new URL(newAddress);
 
                     //TODO provide better timeout stuff
-                    while (csv==null && reqCount < 10) {
+                    while (csv==null && reqCount < 20) {
                         httpUrlConnection.disconnect();
 
                         httpUrlConnection = (HttpURLConnection) requestURL.openConnection();
@@ -406,10 +362,10 @@ public class NetworkUtil {
                         Log.d(TAG, "sendFile:: Get request "+reqCount + " received " +responseCode);
                         if (responseCode == HttpURLConnection.HTTP_OK) {
                             InputStream input = httpUrlConnection.getInputStream();
-                            Log.d(TAG, f.getName());
-                            String rawName = f.getName().split("\\.")[0];
-                            String csvPath = Util.getDataFilepath() + "/" + rawName + ".jpg"; //todo change this to csv
+
+                            String csvPath = Util.getDataFilepath() + "/" + rawName + ".csv"; //todo change this to csv
                             csv = new File(csvPath);
+                            Log.d(TAG, csvPath);
                             FileOutputStream output = new FileOutputStream(csv, false);
 
                             byte data[] = new byte[4096];
@@ -429,6 +385,14 @@ public class NetworkUtil {
                         }
 
                         reqCount++;
+
+                        Thread.sleep(3000);
+                    }
+                    Log.d(TAG, "Received CSV after " + reqCount + " attempts");
+                    if (csv!=null) {
+                        Log.d(TAG, csv.getName());
+                        DatabaseHelper db = new DatabaseHelper(context);
+                        db.ReadRecordCSV(csv);
                     }
 
 
@@ -460,6 +424,120 @@ public class NetworkUtil {
             //TODO: make this a file for database to process
             Log.d(TAG, "HTTP task finished");
             Log.d(TAG, result);
+        }
+
+        @Override
+        protected void onProgressUpdate(String... response) {
+            Log.d(TAG, "ProgressUpdate:: Received from server:\n" + response[0]);
+            //give user update on how their upload went
+            String ok = response[0].contains("upload success!") ? "success" : "failure";
+
+            Toast.makeText(context, "Upload result: " + ok, Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+
+
+    private static class HttpGETAsyncTask extends AsyncTask<File, String, String> {
+
+        private Context context;
+
+        protected HttpGETAsyncTask(Context mContext) {
+            context = mContext;
+        }
+
+        @Override
+        protected String doInBackground(File... files) {
+            if (isUploading)
+                return "upload in progress, try again later";
+
+            File f = files[0];
+            File csv = null;
+            int reqCount = 0;
+            HttpURLConnection httpUrlConnection;
+
+            try {
+                String address = getUrl();
+                String port = getPort();
+
+                Log.d(TAG, "POST worked, now sending GETs");
+
+
+                String rawName = f.getName().split("\\.")[0];
+
+                String newAddress = address + ":" + port + "/" + rawName + ".csv";
+                Log.d(TAG, "GET from " + newAddress);
+                URL requestURL = new URL(newAddress);
+
+                //TODO provide better timeout stuff
+                while (csv == null && reqCount < 20) {
+
+
+                    httpUrlConnection = (HttpURLConnection) requestURL.openConnection();
+
+                    int responseCode = httpUrlConnection.getResponseCode();
+                    Log.d(TAG, "sendFile:: Get request " + reqCount + " received " + responseCode);
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        InputStream input = httpUrlConnection.getInputStream();
+
+                        String csvPath = Util.getDataFilepath() + "/" + rawName + ".csv"; //todo change this to csv
+                        csv = new File(csvPath);
+                        Log.d(TAG, csvPath);
+                        FileOutputStream output = new FileOutputStream(csv, false);
+
+                        byte data[] = new byte[4096];
+                        int count;
+                        while ((count = input.read(data)) != -1) {
+                            // allow canceling with back button
+                            if (isCancelled()) {
+                                input.close();
+                                return null;
+                            }
+                            output.write(data, 0, count);
+                        }
+
+                        Log.d(TAG, "sendFile:: received from GET: " + csv.exists());
+
+                        break;
+                    }
+
+                    reqCount++;
+
+                    Thread.sleep(3000);
+                    httpUrlConnection.disconnect();
+                }
+
+                    Log.d(TAG, "Received CSV after " + reqCount + " attempts");
+                    if (csv != null) {
+                        Log.d(TAG, csv.getName());
+                        DatabaseHelper db = new DatabaseHelper(context);
+                        db.ReadRecordCSV(csv);
+                    }
+
+
+
+
+
+
+                } catch(MalformedURLException e){
+                    Log.e(TAG, "multipart post error " + e + "(" + url + ")");
+                } catch(Exception e){
+                    e.printStackTrace();
+                } finally{
+                    isUploading = false;
+                }
+
+                isUploading = false;
+                return "";
+
+
+            }
+
+        @Override
+        protected void onPostExecute(String result) {
+            //TODO: make this a file for database to process
+            Log.d(TAG, "HTTP task finished");
         }
 
         @Override

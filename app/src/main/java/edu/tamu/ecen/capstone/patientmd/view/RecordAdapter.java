@@ -328,6 +328,11 @@ public class RecordAdapter extends BaseAdapter {
 
                     break;
 
+                case R.id.record_download:
+                    NetworkUtil.GET(Const.ADDRESS, Const.PORT, record, mContext);
+
+                    break;
+
                 case R.id.record_share:
                     //ShareActionProvider shareActionProvider = (ShareActionProvider) item.getActionProvider();
 

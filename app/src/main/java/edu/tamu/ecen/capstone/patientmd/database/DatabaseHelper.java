@@ -20,6 +20,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +36,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+
+import edu.tamu.ecen.capstone.patientmd.util.MedicalSample;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     // constants for database name and column names
@@ -375,4 +384,83 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         return DatabaseUtils.queryNumEntries(db, TABLE_NAME);
     }
+
+
+    /**ADDED BY REESE 10/27     **/
+
+    public void ReadRecordCSV(File csv) {
+        ArrayList<MedicalSample> medical_samples = new ArrayList<>();
+        String TAG = "DatabaseHelper: ";
+        Log.d(TAG, "ReadMedicalData:: Begin");
+        //InputStream is = getResources().openRawResource(R.raw.data);
+        if (!csv.getName().contains("csv"))
+            Log.e(TAG, "input csv file is bad!!!");
+
+        String line = "";
+
+        try {
+            InputStream is = new FileInputStream(csv);
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(is, Charset.forName("UTF-8"))
+            );
+
+
+
+            reader.readLine();
+
+            while ( (line = reader.readLine()) != null) {
+                Log.d(TAG, "ReadMedicalDatabase:: " + line);
+                String[] tokens = line.split(",");
+
+                MedicalSample sample = new MedicalSample();
+                sample.setDate(tokens[0]);
+                sample.setTests(tokens[1]);
+
+                if (tokens[2].length() > 0)
+                    sample.setResult(tokens[2]);
+                else sample.setResult("NA");
+
+                if (tokens[3].length() > 0)
+                    sample.setUnits(tokens[3]);
+                else
+                    sample.setUnits("NA");
+
+                if (tokens[4].length() > 0 && tokens.length >= 5)
+                    sample.setReference_interval(tokens[4]);
+                else
+                    sample.setReference_interval("NA");
+
+                medical_samples.add(sample);
+            }
+        } catch (IOException e) {
+            Log.wtf("DatabaseActivity", "Error reading data file on line " + line, e);
+            e.printStackTrace();
+        }
+
+        boolean isInserted = false;
+
+        boolean added[] = new boolean[medical_samples.size()];
+
+        for (int i = 0; i < medical_samples.size(); ++i) {
+            isInserted = insertData(
+                    medical_samples.get(i).getDate(),
+                    medical_samples.get(i).getTests(),
+                    medical_samples.get(i).getResult(),
+                    medical_samples.get(i).getUnits(),
+                    medical_samples.get(i).getReference_interval()
+            );
+
+            added[i] = isInserted;
+        }
+
+        isInserted = true;
+        for (int i = 0; i < added.length; ++i) {
+            if (!added[i])
+                isInserted = false;
+        }
+
+    }
+
+
 }
