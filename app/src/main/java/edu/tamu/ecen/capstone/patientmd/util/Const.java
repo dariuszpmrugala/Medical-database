@@ -24,7 +24,7 @@ public class Const {
     public static final double RECORD_VIEW_SCALE = 2.5;
 
 
-    public static final String ADDRESS = "http://10.230.227.241";
+    public static final String ADDRESS = "http://10.236.35.149";
     public static final String PORT = "8000";
 
 

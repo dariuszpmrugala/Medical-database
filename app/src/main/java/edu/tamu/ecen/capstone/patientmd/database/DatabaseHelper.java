@@ -405,20 +405,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     new InputStreamReader(is, Charset.forName("UTF-8"))
             );
 
-
-
-            reader.readLine();
+            //reader.readLine();
 
             while ( (line = reader.readLine()) != null) {
                 Log.d(TAG, "ReadMedicalDatabase:: " + line);
-                String[] tokens = line.split(",");
+                //String[] tokens = line.split(",");
+                //String[] tokens = line.split("(?:,)(?=(?:[^\'][^\'])*[^\']*$)", -1);
+                //String[] tokens = line.split("(?:[,]{1})(?=(?:[^\'][^\'])*[^\']*$)", -1);
+                //String[] tokens = line.split(",(?=([^\'][^\'])*[^\']*$)", -1);
+                String[] tokens = line.split(",(?=(?:[^\']*\'[^\']*\')*(?![^\']*\'))", -1);
+
+                for (int i=0; i<tokens.length; i++) {
+                    Log.d(TAG, tokens[i]);
+                }
+
+                if (tokens.length <=1 ) {
+                    Log.d(TAG, "Found bad line in CSV::   " + line);
+                    continue;
+                }
+
+
 
                 MedicalSample sample = new MedicalSample();
                 sample.setDate(tokens[0]);
-                sample.setTests(tokens[1]);
+                sample.setTests(tokens[1].replaceAll("\'",""));
 
-                if (tokens[2].length() > 0)
+                if (tokens[2].length() > 0) {
                     sample.setResult(tokens[2]);
+
+                }
                 else sample.setResult("NA");
 
                 if (tokens[3].length() > 0)

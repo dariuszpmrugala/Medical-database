@@ -340,7 +340,7 @@ public class NetworkUtil {
                 File csv = null;
                 int reqCount = 0;
                 if (rCode == 200) {
-                    Thread.sleep(35000);
+                    Thread.sleep(25000);
 
                     Log.d(TAG, "POST worked, now sending GETs");
 
@@ -461,7 +461,7 @@ public class NetworkUtil {
                 String address = getUrl();
                 String port = getPort();
 
-                Log.d(TAG, "POST worked, now sending GETs");
+                Log.d(TAG, "Sending GETs");
 
 
                 String rawName = f.getName().split("\\.")[0];
@@ -491,6 +491,7 @@ public class NetworkUtil {
                         while ((count = input.read(data)) != -1) {
                             // allow canceling with back button
                             if (isCancelled()) {
+                                Log.d(TAG, "cancelled request");
                                 input.close();
                                 return null;
                             }
@@ -508,16 +509,13 @@ public class NetworkUtil {
                     httpUrlConnection.disconnect();
                 }
 
-                    Log.d(TAG, "Received CSV after " + reqCount + " attempts");
-                    if (csv != null) {
-                        Log.d(TAG, csv.getName());
-                        DatabaseHelper db = new DatabaseHelper(context);
-                        db.ReadRecordCSV(csv);
-                    }
+                Log.d(TAG, "Received CSV after " + reqCount + " attempts");
 
-
-
-
+                if (csv != null) {
+                    Log.d(TAG, csv.getName());
+                    DatabaseHelper db = new DatabaseHelper(context);
+                    db.ReadRecordCSV(csv);
+                }
 
 
                 } catch(MalformedURLException e){

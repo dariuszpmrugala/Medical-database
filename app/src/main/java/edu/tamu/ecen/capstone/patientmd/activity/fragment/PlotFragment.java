@@ -193,6 +193,7 @@ public class PlotFragment extends Fragment {
         for (int i = 0; i < dash_position; ++i) {
             interval_low = interval_low + interval_string.charAt(i);
         }
+        //TODO handle interval low = "" - use a try catch block? return null interval?
         interval[0] = Double.parseDouble(interval_low);
 
         String interval_high = "";
