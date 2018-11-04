@@ -725,8 +725,14 @@ public class HomeFragment extends Fragment {
             }
 
             //TODO anything needed whenever new record is created
+
+            // wait up to 1 second for dest file to be fully recognized before trying to handle; have had issues in the past
+            long t = System.currentTimeMillis();
+            while ((System.currentTimeMillis()-t < 1000) && !(dest.exists()))
             NetworkUtil.POST(Const.ADDRESS, Const.PORT, dest, getContext());
             //update the hash table that holds all bitmaps for the files in app storage
+
+
             AsyncTask.execute(Util.runnableUpdateTable);
 
 
