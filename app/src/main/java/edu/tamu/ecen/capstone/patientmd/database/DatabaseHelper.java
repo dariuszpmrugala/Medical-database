@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
+import edu.tamu.ecen.capstone.patientmd.activity.SignUpActivity;
 import edu.tamu.ecen.capstone.patientmd.util.MedicalSample;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -50,7 +51,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_5 = "UNITS";
     public static final String COL_6 = "REFERENCE_INTERVAL";
 
-    private DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference().child("Entries");
+    private DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference().child(SignUpActivity.username).child("Entries");
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);

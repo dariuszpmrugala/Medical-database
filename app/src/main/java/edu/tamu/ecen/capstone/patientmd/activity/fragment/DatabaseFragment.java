@@ -197,8 +197,6 @@ public class DatabaseFragment extends Fragment {
         }
     }
 
-
-
     public void DeleteData() {
         btnDelete.setOnClickListener(
                 new View.OnClickListener() {

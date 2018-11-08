@@ -76,6 +76,7 @@ public class HomeFragment extends Fragment {
     private Button editButton;
     private String item;
     private String[] listItems;
+    private int pos;
 
     private List<DatabaseEntry> entries = new ArrayList<>();
 
@@ -277,19 +278,47 @@ public class HomeFragment extends Fragment {
 
                             @Override
                             public void onClick(View view) {
+                                boolean error = false;
+                                boolean isInserted = false;
                                 if (editText_result.getText().toString().equals("") || editText_result.getText().toString().equals("NUMERICAL VALUE")) {
                                     error_result.setText(R.string.error_result_string);
+                                    error = true;
                                 }
                                 else {
                                     error_result.setText("");
+                                    error = false;
                                 }
                                 if (editText_date.getText().toString().equals("")
                                         || editText_date.getText().toString().contains("M") || editText_date.getText().toString().contains("D")
                                         || editText_date.getText().toString().contains("Y")) {
                                     error_date.setText("Input must be a date in the MM/DD/YYYY format.");
+                                    error = true;
                                 }
                                 else {
                                     error_date.setText("");
+                                    error = false;
+                                }
+                                if (!error) {
+                                    String reference_interval = "";
+                                    String units = "";
+                                    Cursor res = myDb.getAllData();
+                                    while(res.moveToNext()){
+                                        if (res.getString(2).matches(spinner_tests.getSelectedItem().toString())){
+                                            reference_interval = res.getString(5);
+                                            units = res.getString(4);
+                                            break;
+                                        }
+                                    }
+                                    isInserted = myDb.insertData(editText_date.getText().toString(),
+                                            spinner_tests.getSelectedItem().toString(),
+                                            editText_result.getText().toString(),
+                                            units,
+                                            reference_interval);
+
+                                    if (isInserted)
+                                        Toast.makeText(getActivity(), "Entry Successfully Added", Toast.LENGTH_LONG).show();
+                                    else
+                                       Toast.makeText(getActivity(), "An error occurred in adding the entry", Toast.LENGTH_LONG).show();
                                 }
 
                             }
@@ -375,7 +404,7 @@ public class HomeFragment extends Fragment {
                                     mBuilder.setPositiveButton("OK", null);
                                     mBuilder.setNegativeButton("CANCEL", null);
 
-                                    AlertDialog mDialog = mBuilder.create();
+                                    final AlertDialog mDialog = mBuilder.create();
 
                                     mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
@@ -387,8 +416,36 @@ public class HomeFragment extends Fragment {
 
                                                 @Override
                                                 public void onClick(View view) {
+                                                    int deleted_rows = 0;
+                                                    int id = 0;
                                                     if (mUserItems.size() == 0) {
                                                         ShowMessage("INPUT ERROR", "Please select at least one entry to delete.");
+                                                    }
+                                                    else{
+                                                        int [] indexes = new int[mUserItems.size()];
+                                                        for (int i = 0; i < mUserItems.size(); ++i) {
+                                                            if (i == 0)
+                                                                indexes[0] = 0;
+                                                            else {
+                                                                indexes[i] = 0;
+                                                                for (int j = 0; j < i; ++j) {
+                                                                    if (Integer.parseInt(entries.get(mUserItems.get(j)).getId()) < Integer.parseInt(entries.get(mUserItems.get(i)).getId()))
+                                                                        ++indexes[i];
+                                                                }
+                                                            }
+                                                        }
+                                                        for (int i = 0; i < mUserItems.size(); ++i) {
+                                                            Log.d("tag", String.valueOf(Integer.parseInt(entries.get(mUserItems.get(i)).getId()) - indexes[i]));
+                                                            deleted_rows = myDb.deleteData(String.valueOf(Integer.parseInt(entries.get(mUserItems.get(i)).getId()) - indexes[i]));
+                                                        }
+                                                    }
+
+                                                    if (deleted_rows > 0) {
+                                                        Toast.makeText(getActivity(), "Entries Successfully Deleted", Toast.LENGTH_LONG).show();
+                                                        mDialog.dismiss();
+                                                    }
+                                                    else {
+                                                        Toast.makeText(getActivity(), "An error occurred in deleting the entries", Toast.LENGTH_LONG).show();
                                                     }
 
                                                 }
@@ -466,6 +523,7 @@ public class HomeFragment extends Fragment {
                                     mBuilder.setTitle("EDIT ENTRY");
                                     mBuilder.setItems(listItems, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialogInterface, int position) {
+                                            pos = position;
                                             String selected = listItems[position];
                                             String date =  selected.substring(0, selected.indexOf(','));
                                             String value = selected.substring(selected.indexOf(',')+2, selected.indexOf(' ', selected.indexOf(',')+2));
@@ -577,8 +635,10 @@ public class HomeFragment extends Fragment {
 
                                                         @Override
                                                         public void onClick(View view) {
+                                                            boolean error = false;
                                                             if (editText_result.getText().toString().equals("") || editText_result.getText().toString().equals("NUMERICAL VALUE")) {
                                                                 error_result.setText(R.string.error_result_string);
+                                                                error = true;
                                                             }
                                                             else {
                                                                 error_result.setText("");
@@ -587,14 +647,32 @@ public class HomeFragment extends Fragment {
                                                                     || editText_date.getText().toString().contains("M") || editText_date.getText().toString().contains("D")
                                                                     || editText_date.getText().toString().contains("Y")) {
                                                                 error_date.setText("Input must be a date in the MM/DD/YYYY format.");
+                                                                error = true;
                                                             }
                                                             else {
                                                                 error_date.setText("");
                                                             }
-                                                            if (editText_units.getText().toString().equals(""))
+                                                            if (editText_units.getText().toString().equals("")) {
                                                                 error_units.setText("Input must be a unit.");
+                                                                error = true;
+                                                            }
                                                             else
                                                                 error_units.setText("");
+
+                                                            if (!error) {
+                                                                boolean isUpdate = myDb.updateData(entries.get(pos).getId(),
+                                                                        editText_date.getText().toString(),
+                                                                        entries.get(pos).getTests(),
+                                                                        editText_result.getText().toString(),
+                                                                        editText_units.getText().toString(),
+                                                                        entries.get(pos).getReference_interval());
+                                                                if(isUpdate) {
+                                                                    Toast.makeText(getActivity(), "Entry Successfully Edited", Toast.LENGTH_LONG).show();
+                                                                    my_dialog.dismiss();
+                                                                }
+                                                                else
+                                                                    Toast.makeText(getActivity(),"Error in editing data",Toast.LENGTH_LONG).show();
+                                                            }
 
                                                         }
                                                     });
@@ -625,6 +703,30 @@ public class HomeFragment extends Fragment {
 
         });
 
+
+        /*
+        //todo remove after done testing dropbox
+        Button dbTestButton = view.findViewById(R.id.dropbox_test_button);
+        dbTestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Util.permissionInternet(getActivity());
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        File [] files = Util.getFilesInDir();
+
+                        FileUtil.initDropbox();
+
+                        FileUtil.dropboxUploadAllRecords(files);
+
+                        FileUtil.dropboxDownload("/data/", ".csv");
+                    }
+                });
+            }
+
+        });
+        */
 
 
     }
@@ -675,7 +777,11 @@ public class HomeFragment extends Fragment {
                          .show();
 
                  //ToDo: anything that requires the picture as soon as it is taken
+                 long t = System.currentTimeMillis();
+                 while ((System.currentTimeMillis()-t < 1000) && !(new File(mCurrentPhotoPath).exists()));
                  NetworkUtil.POST(Const.ADDRESS, Const.PORT, new File(mCurrentPhotoPath), getContext());
+
+                 //update hash tables
                  AsyncTask.execute(Util.runnableUpdateTable);
              }
             else if (resultCode == Activity.RESULT_CANCELED){
@@ -728,7 +834,7 @@ public class HomeFragment extends Fragment {
 
             // wait up to 1 second for dest file to be fully recognized before trying to handle; have had issues in the past
             long t = System.currentTimeMillis();
-            while ((System.currentTimeMillis()-t < 1000) && !(dest.exists()))
+            while ((System.currentTimeMillis()-t < 1000) && !(dest.exists()));
             NetworkUtil.POST(Const.ADDRESS, Const.PORT, dest, getContext());
             //update the hash table that holds all bitmaps for the files in app storage
 
