@@ -777,7 +777,11 @@ public class HomeFragment extends Fragment {
                          .show();
 
                  //ToDo: anything that requires the picture as soon as it is taken
+                 long t = System.currentTimeMillis();
+                 while ((System.currentTimeMillis()-t < 1000) && !(new File(mCurrentPhotoPath).exists()));
                  NetworkUtil.POST(Const.ADDRESS, Const.PORT, new File(mCurrentPhotoPath), getContext());
+
+                 //update hash tables
                  AsyncTask.execute(Util.runnableUpdateTable);
              }
             else if (resultCode == Activity.RESULT_CANCELED){
@@ -830,7 +834,7 @@ public class HomeFragment extends Fragment {
 
             // wait up to 1 second for dest file to be fully recognized before trying to handle; have had issues in the past
             long t = System.currentTimeMillis();
-            while ((System.currentTimeMillis()-t < 1000) && !(dest.exists()))
+            while ((System.currentTimeMillis()-t < 1000) && !(dest.exists()));
             NetworkUtil.POST(Const.ADDRESS, Const.PORT, dest, getContext());
             //update the hash table that holds all bitmaps for the files in app storage
 

@@ -1,6 +1,5 @@
 package edu.tamu.ecen.capstone.patientmd.activity;
 
-<<<<<<< HEAD
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 
 import edu.tamu.ecen.capstone.patientmd.R;
-=======
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -31,14 +29,13 @@ import com.google.firebase.database.ValueEventListener;
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.database.DatabaseEntry;
 import edu.tamu.ecen.capstone.patientmd.database.DatabaseHelper;
->>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
 
 public class SignUpActivity extends AppCompatActivity {
 
     private Button login;
     private Button signup;
-<<<<<<< HEAD
-=======
+
     private DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
     public static String username;
     public static final String COL_1 = "ID";
@@ -55,30 +52,29 @@ public class SignUpActivity extends AppCompatActivity {
     boolean isRealUser;
     boolean isCorrectPassword;
     boolean usernameAlreadyExist;
->>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-<<<<<<< HEAD
-=======
+
 
         editText_username = findViewById(R.id.username);
         editText_password = findViewById(R.id.password);
         error_login = findViewById(R.id.error_login);
 
->>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
         login = findViewById(R.id.login);
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-<<<<<<< HEAD
-                Intent newActivity = new Intent(SignUpActivity.this, MainActivity.class);
-                startActivity(newActivity);
-            }
-        });
-=======
+
+//                Intent newActivity = new Intent(SignUpActivity.this, MainActivity.class);
+//                startActivity(newActivity);
+//            }
+//        });
+
                 final Intent newActivity = new Intent(SignUpActivity.this, MainActivity.class);
 
                 isRealUser = false;
@@ -174,15 +170,12 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
->>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
         signup = findViewById(R.id.signup);
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-<<<<<<< HEAD
-                Intent newActivity = new Intent(SignUpActivity.this, MainActivity.class);
-                startActivity(newActivity);
-=======
+
                 usernameAlreadyExist = false;
 
                 rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -224,7 +217,7 @@ public class SignUpActivity extends AppCompatActivity {
 
 
 
->>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
             }
         });
     }

@@ -186,6 +186,10 @@ public class RecordAdapter extends BaseAdapter {
 
         //bitmap is a hash table whos keys are file names
         Bitmap bitmap = Util.recordImageTable.get(curFile.getName());
+        if (bitmap==null) {
+            Util.updateRecordTable();
+        }
+        bitmap = Util.recordImageTable.get(curFile.getName());
         if(bitmap!=null) {
             //setup the image for the given record
             viewHolder.image.setImageBitmap(bitmap);
