@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background4"
+    tools:context="edu.tamu.ecen.capstone.patientmd.activity.SignUpActivity">
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="220dp"
+        android:layout_height="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="150dp"
+        android:layout_marginStart="130dp"
+<<<<<<< HEAD
+        android:text="username"/>
+=======
+        android:hint="username"
+        android:fontFamily="sans-serif"/>
+>>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="220dp"
+        android:layout_height="40dp"
+        app:layout_constraintStart_toStartOf="@+id/username"
+        app:layout_constraintTop_toTopOf="@+id/username"
+        android:layout_marginTop="50dp"
+<<<<<<< HEAD
+        android:text="password"/>
+=======
+        android:hint="password"
+        android:fontFamily="sans-serif"
+        android:inputType="textPassword"/>
+>>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
+    <Button
+        android:id="@+id/login"
+        style="@android:style/Widget.DeviceDefault.Button.Inset"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+<<<<<<< HEAD
+        android:layout_marginTop="70dp"
+        android:text="Login"
+        app:layout_constraintStart_toStartOf="@+id/password"
+        app:layout_constraintTop_toTopOf="@+id/password" />
+=======
+        android:layout_marginTop="85dp"
+        android:text="Login"
+        app:layout_constraintStart_toStartOf="@+id/password"
+        app:layout_constraintTop_toTopOf="@+id/password"
+        android:fontFamily="sans-serif"/>
+>>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
+    <Button
+        android:id="@+id/signup"
+        style="@android:style/Widget.DeviceDefault.Button.Inset"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+<<<<<<< HEAD
+        android:layout_marginTop="70dp"
+        android:text="Sign Up"
+        app:layout_constraintStart_toEndOf="@+id/login"
+        app:layout_constraintTop_toTopOf="@+id/password" />
+
+    <TextView
+        android:layout_width="220dp"
+        android:layout_height="40dp"
+        app:layout_constraintStart_toStartOf="@+id/password"
+        app:layout_constraintTop_toTopOf="@+id/password"
+        android:textColor="#ff0000"
+        android:layout_marginTop="30dp" />
+=======
+        android:layout_marginTop="85dp"
+        android:text="Sign Up"
+        app:layout_constraintStart_toEndOf="@+id/login"
+        app:layout_constraintTop_toTopOf="@+id/password"
+        android:fontFamily="sans-serif"/>
+
+    <TextView
+        android:id="@+id/error_login"
+        android:layout_width="220dp"
+        android:layout_height="50dp"
+        app:layout_constraintStart_toStartOf="@+id/password"
+        app:layout_constraintTop_toTopOf="@+id/password"
+        android:textColor="#ff0000"
+        android:layout_marginTop="35dp"
+        android:layout_marginStart="5dp"
+        android:fontFamily="sans-serif"/>
+>>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
+</android.support.constraint.ConstraintLayout>

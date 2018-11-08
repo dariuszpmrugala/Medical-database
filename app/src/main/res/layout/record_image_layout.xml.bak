@@ -1,0 +1,62 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/record_image">
+
+        <ImageView
+            android:id="@+id/imageview_record_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/record_image_menu_description"
+            android:src="@drawable/smiling_dog"/>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@id/record_image"
+        android:layout_alignStart="@+id/record_image"
+<<<<<<< HEAD
+        android:background="@color/colorPrimaryLight">
+=======
+        android:background="@color/record_view_background_color">
+>>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
+        <TextView
+            android:id="@+id/record_text_filename"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:layout_toStartOf="@+id/record_info_button"
+            android:layout_centerInParent="true"
+            android:gravity="center_horizontal"
+            android:text="Image not found, enjoy this dog"
+            android:textAppearance="?android:attr/textAppearanceSearchResultTitle"
+            android:textSize="13sp" />
+
+
+        <ImageButton
+            android:id="@+id/record_info_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="bottom|end"
+            android:contentDescription="@string/record_image_menu_description"
+            android:src="@drawable/ic_more_vert"/>
+
+
+    </RelativeLayout>
+
+</RelativeLayout>

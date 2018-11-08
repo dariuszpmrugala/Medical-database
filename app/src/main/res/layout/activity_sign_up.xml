@@ -15,7 +15,8 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="150dp"
         android:layout_marginStart="130dp"
-        android:text="username"/>
+        android:hint="username"
+        android:fontFamily="sans-serif"/>
 
     <EditText
         android:id="@+id/password"
@@ -24,34 +25,41 @@
         app:layout_constraintStart_toStartOf="@+id/username"
         app:layout_constraintTop_toTopOf="@+id/username"
         android:layout_marginTop="50dp"
-        android:text="password"/>
+        android:hint="password"
+        android:fontFamily="sans-serif"
+        android:inputType="textPassword"/>
 
     <Button
         android:id="@+id/login"
         style="@android:style/Widget.DeviceDefault.Button.Inset"
         android:layout_width="110dp"
         android:layout_height="50dp"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="85dp"
         android:text="Login"
         app:layout_constraintStart_toStartOf="@+id/password"
-        app:layout_constraintTop_toTopOf="@+id/password" />
+        app:layout_constraintTop_toTopOf="@+id/password"
+        android:fontFamily="sans-serif"/>
 
     <Button
         android:id="@+id/signup"
         style="@android:style/Widget.DeviceDefault.Button.Inset"
         android:layout_width="110dp"
         android:layout_height="50dp"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="85dp"
         android:text="Sign Up"
         app:layout_constraintStart_toEndOf="@+id/login"
-        app:layout_constraintTop_toTopOf="@+id/password" />
+        app:layout_constraintTop_toTopOf="@+id/password"
+        android:fontFamily="sans-serif"/>
 
     <TextView
+        android:id="@+id/error_login"
         android:layout_width="220dp"
-        android:layout_height="40dp"
+        android:layout_height="50dp"
         app:layout_constraintStart_toStartOf="@+id/password"
         app:layout_constraintTop_toTopOf="@+id/password"
         android:textColor="#ff0000"
-        android:layout_marginTop="30dp" />
+        android:layout_marginTop="35dp"
+        android:layout_marginStart="5dp"
+        android:fontFamily="sans-serif"/>
 
 </android.support.constraint.ConstraintLayout>

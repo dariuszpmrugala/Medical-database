@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="colorPrimary">#2f73a6</color>
+    <color name="colorPrimaryLight">#66a1d8</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="color_main_background">#409085</color>
+    <color name="bottom_color_primary">#102027</color>
+    <color name="bottom_color_secondary">#34515e</color>
+    <color name="bottom_color_item_background">#fafafa</color>
+    <color name="bottom_color_background">#007e33</color>
+    <color name="ripple_color">#9affb3</color>
+    <color name="record_button_color">#2f73a6</color>
+<<<<<<< HEAD
+    <color name="record_view_background_color">#7bd2bc</color>
+    <color name="control_background">#cc4285f4</color>
+    <color name="grey_background">#eeeeee</color>
+=======
+    <color name="record_view_background_color">#b3b3b3</color>
+    <color name="control_background">#cc4285f4</color>
+    <color name="grey_background">#cacaca</color>
+    <color name="nav_bar_background">#eeeeee</color>
+>>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
+
+
+
+</resources>

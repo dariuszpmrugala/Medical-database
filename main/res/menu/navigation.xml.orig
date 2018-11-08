@@ -1,0 +1,43 @@
+<<<<<<< HEAD
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/title_home" />
+
+    <item
+        android:id="@+id/navigation_archive"
+        android:icon="@drawable/ic_archive_black_24dp"
+        android:title="@string/title_archive" />
+
+    <item
+        android:id="@+id/navigation_plots"
+        android:icon="@drawable/ic_timeline_black_24dp"
+        android:title="@string/title_plots" />
+
+
+</menu>
+=======
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/title_home" />
+
+    <item
+        android:id="@+id/navigation_archive"
+        android:icon="@drawable/ic_archive_black_24dp"
+        android:title="@string/title_archive" />
+
+    <item
+        android:id="@+id/navigation_plots"
+        android:icon="@drawable/ic_timeline_black_24dp"
+        android:title="@string/title_plots" />
+
+
+</menu>
+>>>>>>> 8a7efc0ecd8773a8eb06949114dc9786604aa4a3
