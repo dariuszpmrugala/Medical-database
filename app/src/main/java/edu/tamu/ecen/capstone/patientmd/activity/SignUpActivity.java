@@ -202,7 +202,7 @@ public class SignUpActivity extends AppCompatActivity {
                             else {
                                 DatabaseReference ref = rootRef.child(editText_username.getText().toString());
                                 ref.child("Password").setValue(editText_password.getText().toString());
-                                ref.child("Entries").child("ID").setValue(0);
+                                //ref.child("Entries").child("ID").setValue(0);
                                 username = editText_username.getText().toString();
                                 error_login.setText("");
                                 Toast.makeText(getApplicationContext(), "Account successfully created", Toast.LENGTH_LONG).show();
@@ -214,9 +214,6 @@ public class SignUpActivity extends AppCompatActivity {
                     public void onCancelled(DatabaseError databaseError) {
                     }
                 });
-
-
-
 
             }
         });

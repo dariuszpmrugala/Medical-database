@@ -526,6 +526,8 @@ public class NetworkUtil {
                     isUploading = false;
                 }
 
+                publishProgress("upload success");
+
                 isUploading = false;
                 return "";
 

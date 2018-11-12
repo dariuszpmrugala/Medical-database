@@ -186,21 +186,42 @@ public class PlotFragment extends Fragment {
     public double[] ReferenceInterval(DatabaseEntry entry) {
         double[] interval = new double[2];
         String interval_string = entry.getReference_interval();
-
-        int dash_position = interval_string.indexOf('-');
-
         String interval_low = "";
-        for (int i = 0; i < dash_position; ++i) {
-            interval_low = interval_low + interval_string.charAt(i);
-        }
-        //TODO handle interval low = "" - use a try catch block? return null interval?
-        interval[0] = Double.parseDouble(interval_low);
 
-        String interval_high = "";
-        for (int j = dash_position + 1; j < interval_string.length(); ++j) {
-            interval_high = interval_high + interval_string.charAt(j);
+        if (interval_string.contains("<")) {
+            for (int i = 1; i < interval_string.length(); ++i) {
+                interval_low = interval_low + interval_string.charAt(i);
+            }
+
+            interval[0] = Double.parseDouble(interval_low);
+            interval[1] = -1.0;
         }
-        interval[1] = Double.parseDouble(interval_high);
+
+        else if (interval_string.contains(">")) {
+            for (int i = 1; i < interval_string.length(); ++i) {
+                interval_low = interval_low + interval_string.charAt(i);
+            }
+
+            interval[0] = Double.parseDouble(interval_low);
+            interval[1] = -2.0;
+        }
+
+        else {
+
+            int dash_position = interval_string.indexOf('-');
+
+            for (int i = 0; i < dash_position; ++i) {
+                interval_low = interval_low + interval_string.charAt(i);
+            }
+            //TODO handle interval low = "" - use a try catch block? return null interval?
+            interval[0] = Double.parseDouble(interval_low);
+
+            String interval_high = "";
+            for (int j = dash_position + 1; j < interval_string.length(); ++j) {
+                interval_high = interval_high + interval_string.charAt(j);
+            }
+            interval[1] = Double.parseDouble(interval_high);
+        }
 
         return interval;
     }
@@ -260,7 +281,7 @@ public class PlotFragment extends Fragment {
 
                 line_chart.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getContext()));
                 line_chart.getGridLabelRenderer().setNumHorizontalLabels(4);
-                line_chart.getGridLabelRenderer().setNumVerticalLabels(8);
+                line_chart.getGridLabelRenderer().setNumVerticalLabels(6);
                 line_chart.getGridLabelRenderer().setTextSize(35f);
                 line_chart.getGridLabelRenderer().reloadStyles();
                 line_chart.getGridLabelRenderer().setHumanRounding(false);
@@ -293,23 +314,49 @@ public class PlotFragment extends Fragment {
 
                 double[] reference_interval = ReferenceInterval(entries.get(0));
 
-                DataPoint[] end_points_low = new DataPoint[2];
-                end_points_low[0] = new DataPoint(x_min, reference_interval[0]);
-                end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+                Log.d("tag", String.valueOf(reference_interval[1]));
 
-                LineGraphSeries<DataPoint> series3 = new LineGraphSeries<>(end_points_low);
-                series3.setTitle("Ref Interval");
-                series3.setColor(Color.RED);
-                line_chart.addSeries(series3);
+                if (reference_interval[1] > -.99 || reference_interval[1] > -.99) {
+                    DataPoint[] end_points_low = new DataPoint[2];
+                    end_points_low[0] = new DataPoint(x_min, reference_interval[0]);
+                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
 
-                DataPoint[] end_points_high = new DataPoint[2];
-                end_points_high[0] = new DataPoint(x_min, reference_interval[1]);
-                end_points_high[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[1]);
+                    LineGraphSeries<DataPoint> series3 = new LineGraphSeries<>(end_points_low);
+                    series3.setTitle("Min Level");
+                    series3.setColor(Color.RED);
+                    line_chart.addSeries(series3);
 
-                LineGraphSeries<DataPoint> series4 = new LineGraphSeries<>(end_points_high);
-                series4.setTitle("Ref Interval");
-                series4.setColor(Color.RED);
-                line_chart.addSeries(series4);
+                    DataPoint[] end_points_high = new DataPoint[2];
+                    end_points_high[0] = new DataPoint(x_min, reference_interval[1]);
+                    end_points_high[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[1]);
+
+                    LineGraphSeries<DataPoint> series4 = new LineGraphSeries<>(end_points_high);
+                    series4.setTitle("Max Level");
+                    series4.setColor(Color.RED);
+                    line_chart.addSeries(series4);
+                }
+
+                else if (reference_interval[1] == -1.0){
+                    DataPoint[] end_points_low = new DataPoint[2];
+                    end_points_low[0] = new DataPoint(x_min, reference_interval[0]);
+                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+
+                    LineGraphSeries<DataPoint> series3 = new LineGraphSeries<>(end_points_low);
+                    series3.setTitle("Min Level");
+                    series3.setColor(Color.RED);
+                    line_chart.addSeries(series3);
+                }
+
+                else if (reference_interval[1] == -2.0){
+                    DataPoint[] end_points_low = new DataPoint[2];
+                    end_points_low[0] = new DataPoint(x_min, reference_interval[0]);
+                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+
+                    LineGraphSeries<DataPoint> series3 = new LineGraphSeries<>(end_points_low);
+                    series3.setTitle("Max Level");
+                    series3.setColor(Color.RED);
+                    line_chart.addSeries(series3);
+                }
 
                 line_chart.getViewport().setXAxisBoundsManual(true);
                 line_chart.getViewport().setMinX(x_min.getTime());
@@ -319,10 +366,17 @@ public class PlotFragment extends Fragment {
                     line_chart.getViewport().setMinY(y_min - y_min * 0.1d);
                 else
                     line_chart.getViewport().setMinY(reference_interval[0] - reference_interval[0] * 0.1d);
-                if (y_max > reference_interval[1])
+
+                if (reference_interval[1] != -1.0 || reference_interval[1] != -2.0) {
+
+                    if (y_max > reference_interval[1])
+                        line_chart.getViewport().setMaxY(y_max + y_max * 0.1d);
+                    else
+                        line_chart.getViewport().setMaxY(reference_interval[1] + reference_interval[1] * 0.1d);
+                }
+                else {
                     line_chart.getViewport().setMaxY(y_max + y_max * 0.1d);
-                else
-                    line_chart.getViewport().setMaxY(reference_interval[1] + reference_interval[1] * 0.1d);
+                }
 
                 Log.d("max", String.valueOf(y_max));
 
