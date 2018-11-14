@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 import edu.tamu.ecen.capstone.patientmd.R;
@@ -61,6 +63,7 @@ public class RecordAdapter extends BaseAdapter {
 
 
         recordsList = new ArrayList<>(Arrays.asList(getFilesInDir()));
+        Collections.sort(recordsList, compareByModifiedTime);
         Log.d(TAG, "RecordsAdapter Constructor:: " + recordsList.size() + " images for gridview");
     }
 
@@ -105,6 +108,10 @@ public class RecordAdapter extends BaseAdapter {
         addNewRecords();
         removeOldRecords();
         onRecordDataChanged();
+
+        checkArraylist();
+        Collections.sort(recordsList, compareByModifiedTime);
+        checkArraylist();
 
         Log.d(TAG, "updateRecordsList:: " + recordsList.size() + " images for gridview");
     }
@@ -403,6 +410,28 @@ public class RecordAdapter extends BaseAdapter {
         Log.d(TAG, "onRecordDataChanged");
         if(mListener!=null) {
             mListener.onEvent();
+        }
+    }
+
+    private Comparator<File> compareByModifiedTime = new Comparator<File>() {
+        @Override
+        public int compare(File o1, File o2) {
+            long timestamp1 = o1.lastModified();
+            long timestamp2 = o2.lastModified();
+            int retVal = timestamp1 > timestamp2 ? -1 : 1;
+            Log.d(TAG, "compareByModifiedTime:: " + o1.getName() + " vs. " + o2.getName());
+
+            Log.d(TAG, "compareByModifiedTime::  "+ timestamp1 +" vs. " + timestamp2 + " : " + retVal);
+            if (timestamp1 == timestamp2)
+                return 0;
+            return retVal;
+
+        }
+    };
+
+    private void checkArraylist(){
+        for (int i = 0; i < recordsList.size(); i++) {
+            Log.d(TAG, recordsList.get(i).getName());
         }
     }
 

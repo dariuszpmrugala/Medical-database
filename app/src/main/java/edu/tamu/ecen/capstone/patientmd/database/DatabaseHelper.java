@@ -11,6 +11,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -51,10 +52,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_5 = "UNITS";
     public static final String COL_6 = "REFERENCE_INTERVAL";
 
+    public static Context mContext;
+
     private DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference().child(SignUpActivity.username).child("Entries");
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
+        mContext = context;
     }
 
     @Override
@@ -389,13 +393,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**ADDED BY REESE 10/27     **/
 
-    public void ReadRecordCSV(File csv) {
+    public boolean ReadRecordCSV(File csv) {
         ArrayList<MedicalSample> medical_samples = new ArrayList<>();
         String TAG = "DatabaseHelper: ";
         Log.d(TAG, "ReadMedicalData:: Begin");
         //InputStream is = getResources().openRawResource(R.raw.data);
-        if (!csv.getName().contains("csv"))
+        if (!csv.getName().contains("csv")) {
             Log.e(TAG, "input csv file is bad!!!");
+            return false;
+        }
+
+        Log.d(TAG, "CSV file has " + csv.length() + " bytes");
+        if (csv.length()==0) {
+            return false;
+        }
+
 
         String line = "";
 
@@ -476,7 +488,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 isInserted = false;
         }
 
+        return true;
     }
+
+
 
 
 }

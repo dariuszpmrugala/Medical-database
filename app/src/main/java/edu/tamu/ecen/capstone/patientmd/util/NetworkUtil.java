@@ -233,7 +233,7 @@ public class NetworkUtil {
     }
 
 
-    private static class HttpAsyncTask extends AsyncTask<File, String, String> {
+    private static class HttpAsyncTask extends AsyncTask<File, String, Boolean> {
 
         Context context;
 
@@ -242,9 +242,10 @@ public class NetworkUtil {
         }
 
         @Override
-        protected String doInBackground(File... file) {
+        protected Boolean doInBackground(File... file) {
+            Boolean retVal = false;
             if (isUploading)
-                return "upload in progress, try again later";
+                return false;
 
             if (file.length > 1)
                 Log.d(TAG, "Attempting to send multiple files at once is not supported");
@@ -374,7 +375,7 @@ public class NetworkUtil {
                                 // allow canceling with back button
                                 if (isCancelled()) {
                                     input.close();
-                                    return null;
+                                    return false;
                                 }
                                 output.write(data, 0, count);
                             }
@@ -392,7 +393,7 @@ public class NetworkUtil {
                     if (csv!=null) {
                         Log.d(TAG, csv.getName());
                         DatabaseHelper db = new DatabaseHelper(context);
-                        db.ReadRecordCSV(csv);
+                        retVal = db.ReadRecordCSV(csv);
                     }
 
 
@@ -402,8 +403,10 @@ public class NetworkUtil {
                 responseStream.close();
                 httpUrlConnection.disconnect();
 
+                Log.d(TAG, response);
+
                 isUploading = false;
-                return response;
+                return retVal;
 
 
             } catch (MalformedURLException e) {
@@ -414,16 +417,18 @@ public class NetworkUtil {
                 isUploading = false;
             }
 
-            return "Request failed";
+            return retVal;
 
 
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(Boolean result) {
             //TODO: make this a file for database to process
             Log.d(TAG, "HTTP task finished");
-            Log.d(TAG, result);
+            if (!result) {
+                Toast.makeText(context, "Last record sent was not interpreted by server, please take a new image", Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
@@ -439,7 +444,7 @@ public class NetworkUtil {
 
 
 
-    private static class HttpGETAsyncTask extends AsyncTask<File, String, String> {
+    private static class HttpGETAsyncTask extends AsyncTask<File, String, Boolean> {
 
         private Context context;
 
@@ -448,9 +453,11 @@ public class NetworkUtil {
         }
 
         @Override
-        protected String doInBackground(File... files) {
+        protected Boolean doInBackground(File... files) {
+            boolean retVal = false;
+
             if (isUploading)
-                return "upload in progress, try again later";
+                return false;
 
             File f = files[0];
             File csv = null;
@@ -493,7 +500,7 @@ public class NetworkUtil {
                             if (isCancelled()) {
                                 Log.d(TAG, "cancelled request");
                                 input.close();
-                                return null;
+                                return false;
                             }
                             output.write(data, 0, count);
                         }
@@ -514,7 +521,7 @@ public class NetworkUtil {
                 if (csv != null) {
                     Log.d(TAG, csv.getName());
                     DatabaseHelper db = new DatabaseHelper(context);
-                    db.ReadRecordCSV(csv);
+                    retVal = db.ReadRecordCSV(csv);
                 }
 
 
@@ -529,15 +536,18 @@ public class NetworkUtil {
                 publishProgress("upload success");
 
                 isUploading = false;
-                return "";
+                return retVal;
 
 
             }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(Boolean result) {
             //TODO: make this a file for database to process
             Log.d(TAG, "HTTP task finished");
+            if (!result) {
+                Toast.makeText(context, "Last record sent was not interpreted by server, please take a new image", Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
