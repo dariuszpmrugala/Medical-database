@@ -237,6 +237,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<DatabaseEntry> queryData(String field, String text) {
         List<DatabaseEntry> entries = new ArrayList<>();
 
+        if (text.contains("(") || text.contains(")")) {
+            Log.d("DatabaseHelper", "queryData:: has parentheses: " + text);
+            StringBuffer text_buffer = new StringBuffer(text);
+
+            int i = text.indexOf("(");
+            text_buffer.insert(i, "\\");
+            int j = text.indexOf(")");
+            text_buffer.insert(j + 1, "\\"); // +1 because text_buffer is changed, but text is not
+
+            text = text_buffer.toString();
+
+        }
+
+
+
+        Log.d("DatabaseHelper", "queryData:: query field " + text);
+
         // get entire database table
         Cursor res = getAllData();
 
@@ -277,6 +294,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // query database based on "tests" field and range of dates
     public List<DatabaseEntry> queryRangeData(String test, String date_low, String date_high) {
         List<DatabaseEntry> entries = new ArrayList<>();
+
+        if (test.contains("(") || test.contains(")")) {
+            Log.d("DatabaseHelper", "queryData:: has parentheses: " + test);
+            StringBuffer text_buffer = new StringBuffer(test);
+
+            int i = test.indexOf("(");
+            text_buffer.insert(i, "\\");
+            int j = test.indexOf(")");
+            text_buffer.insert(j + 1, "\\"); // +1 because text_buffer is changed, but text is not
+
+            test = text_buffer.toString();
+
+        }
 
         // get entire database table
         Cursor res = getAllData();
@@ -459,11 +489,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 else
                     sample.setReference_interval("NA");
 
+
+                //fix any issues
+                if (sample.getUnits().equals("0") || sample.getUnits().equals("o")) {
+                    sample.setUnits("%");
+                }
+
                 medical_samples.add(sample);
             }
         } catch (IOException e) {
-            Log.wtf("DatabaseActivity", "Error reading data file on line " + line, e);
+            Log.wtf("DatabaseHelper:", "Error reading data file on line " + line, e);
             e.printStackTrace();
+        } catch (IndexOutOfBoundsException e) {
+            Log.wtf(TAG, "Error reading data file", e);
+            return false;
         }
 
         boolean isInserted = false;

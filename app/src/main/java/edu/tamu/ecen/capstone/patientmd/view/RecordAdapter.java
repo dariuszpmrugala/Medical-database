@@ -419,9 +419,9 @@ public class RecordAdapter extends BaseAdapter {
             long timestamp1 = o1.lastModified();
             long timestamp2 = o2.lastModified();
             int retVal = timestamp1 > timestamp2 ? -1 : 1;
-            Log.d(TAG, "compareByModifiedTime:: " + o1.getName() + " vs. " + o2.getName());
+            //Log.d(TAG, "compareByModifiedTime:: " + o1.getName() + " vs. " + o2.getName());
 
-            Log.d(TAG, "compareByModifiedTime::  "+ timestamp1 +" vs. " + timestamp2 + " : " + retVal);
+            //Log.d(TAG, "compareByModifiedTime::  "+ timestamp1 +" vs. " + timestamp2 + " : " + retVal);
             if (timestamp1 == timestamp2)
                 return 0;
             return retVal;

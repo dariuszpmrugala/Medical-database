@@ -3,6 +3,7 @@ package edu.tamu.ecen.capstone.patientmd.activity.fragment;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -10,6 +11,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GridLabelRenderer;
 import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
@@ -48,6 +51,7 @@ import edu.tamu.ecen.capstone.patientmd.database.DatabaseHelper;
 import edu.tamu.ecen.capstone.patientmd.plot.PlotActivity;
 import edu.tamu.ecen.capstone.patientmd.plot.PlotField;
 import edu.tamu.ecen.capstone.patientmd.util.FileUtil;
+import edu.tamu.ecen.capstone.patientmd.view.initGraphView;
 
 /**
  * Created by Reese on 3/21/2018.
@@ -60,7 +64,7 @@ public class PlotFragment extends Fragment {
     private DatabaseHelper myDb;
     private Spinner spinner_tests;
     private Spinner spinner_dates;
-    private GraphView line_chart;
+    private initGraphView line_chart;
     private PlotField plot_field;
     private Button lowDateBtn;
     private Button highDateBtn;
@@ -91,11 +95,15 @@ public class PlotFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        Log.d(TAG, "onViewCreated");
+
         myDb = new DatabaseHelper(getContext());
 
         spinner_tests = view.findViewById(R.id.spinner_tests);
         spinner_dates = view.findViewById(R.id.spinner_dates);
-        line_chart = view.findViewById(R.id.line_chart);
+
+        //GraphView temp = view.findViewById(R.id.line_chart);
+        line_chart =  view.findViewById(R.id.line_chart);
 
         lowDateBtn = view.findViewById(R.id.button_date_low);
         highDateBtn = view.findViewById(R.id.button_date_high);
@@ -125,6 +133,8 @@ public class PlotFragment extends Fragment {
         plot_field.setDate_high(format.format(high_date));
 
         plot_field.setTest(first_test);
+
+
 
         // plot default plot
         Plot(view);
@@ -234,7 +244,7 @@ public class PlotFragment extends Fragment {
             entries = OrderEntries(entries);
 
             Date x_min = new Date();
-            Date x_max;
+            Date x_max = null;
 
             double y_min;
             double y_max;
@@ -263,6 +273,9 @@ public class PlotFragment extends Fragment {
                         if (i == 0)
                             x_min = date;
 
+
+                        x_max = date;
+
                         points[i] = new DataPoint(date, Double.parseDouble(String.valueOf(entries.get(i).getResult())));
 
                         dates[i] = entries.get(i).getDate();
@@ -279,6 +292,9 @@ public class PlotFragment extends Fragment {
                     buffer.append("REFERENCE INTERVAL :" + entries.get(i).getReference_interval() + "\n\n");
                 }
 
+                Log.d(TAG, "Setting settings for grid of plot");
+                line_chart.init();
+
                 line_chart.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getContext()));
                 line_chart.getGridLabelRenderer().setNumHorizontalLabels(4);
                 line_chart.getGridLabelRenderer().setNumVerticalLabels(6);
@@ -290,7 +306,9 @@ public class PlotFragment extends Fragment {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(x_min);
                 calendar.add(Calendar.MONTH, 3);
-                x_max = calendar.getTime();
+                if (x_max==null) {
+                    x_max = calendar.getTime(); //Reese did this
+                }
 
                 PointsGraphSeries<DataPoint> series = new PointsGraphSeries<>(points);
                 series.setShape(PointsGraphSeries.Shape.RECTANGLE);
@@ -380,8 +398,8 @@ public class PlotFragment extends Fragment {
 
                 Log.d("max", String.valueOf(y_max));
 
-                line_chart.getViewport().setScalable(true);
-                line_chart.getViewport().setScrollable(true);
+                //line_chart.getViewport().setScalable(true);
+                //line_chart.getViewport().setScrollable(true);
                 line_chart.getLegendRenderer().setVisible(true);
                 line_chart.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
 
@@ -607,6 +625,8 @@ public class PlotFragment extends Fragment {
         );
 
     }
+
+
 
 
 }

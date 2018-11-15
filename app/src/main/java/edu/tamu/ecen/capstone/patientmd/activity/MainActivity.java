@@ -165,16 +165,19 @@ public class MainActivity extends AppCompatActivity {
     private boolean startFragment(Fragment fragment, String tag) {
         if(fragment != null || fragment==currentFragment) {
 
-
-            FragmentTransaction ft = fragmentManager.beginTransaction();
-            //ft.remove(homeFrag);
-            //ft.replace(viewId, fragment);
-            ft.replace(R.id.fragment_container, fragment, tag);
-            ft.addToBackStack(null);
-            ft.show(fragment);
-            ft.commit();
-            currentFragment=fragment;
-            return true;
+            try {
+                FragmentTransaction ft = fragmentManager.beginTransaction();
+                //ft.remove(homeFrag);
+                //ft.replace(viewId, fragment);
+                ft.replace(R.id.fragment_container, fragment, tag);
+                ft.addToBackStack(null);
+                ft.show(fragment);
+                ft.commit();
+                currentFragment = fragment;
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         return false;
