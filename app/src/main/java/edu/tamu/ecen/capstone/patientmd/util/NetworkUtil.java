@@ -532,7 +532,7 @@ public class NetworkUtil {
                 } finally{
                     isUploading = false;
                 }
-        
+
 
                 isUploading = false;
                 return retVal;
