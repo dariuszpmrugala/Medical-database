@@ -29,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.database.DatabaseEntry;
 import edu.tamu.ecen.capstone.patientmd.database.DatabaseHelper;
+import edu.tamu.ecen.capstone.patientmd.util.NetworkUtil;
 
 
 public class SignUpActivity extends AppCompatActivity {
@@ -74,99 +75,101 @@ public class SignUpActivity extends AppCompatActivity {
 //                startActivity(newActivity);
 //            }
 //        });
+                if (!NetworkUtil.isConnected(SignUpActivity.this)) {
+                    error_login.setText("Internet connection must be established to login.");
+                } else {
+                    final Intent newActivity = new Intent(SignUpActivity.this, MainActivity.class);
 
-                final Intent newActivity = new Intent(SignUpActivity.this, MainActivity.class);
+                    isRealUser = false;
+                    isCorrectPassword = false;
 
-                isRealUser = false;
-                isCorrectPassword = false;
-
-                rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            Log.d("tag", snapshot.getKey().toString());
-                            if (snapshot.getKey().toString().matches(editText_username.getText().toString())) {
-                                Log.d("tag", "username matches");
-                                isRealUser = true;
-                                for (DataSnapshot snapshot2 : snapshot.getChildren()) {
-                                    if (snapshot2.getKey().toString().matches("Password")) {
-                                        if (snapshot2.getValue().toString().matches(editText_password.getText().toString())) {
-                                            Log.d("tag", "password matches");
-                                            isCorrectPassword = true;
+                    rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                Log.d("tag", snapshot.getKey().toString());
+                                if (snapshot.getKey().toString().matches(editText_username.getText().toString())) {
+                                    Log.d("tag", "username matches");
+                                    isRealUser = true;
+                                    for (DataSnapshot snapshot2 : snapshot.getChildren()) {
+                                        if (snapshot2.getKey().toString().matches("Password")) {
+                                            if (snapshot2.getValue().toString().matches(editText_password.getText().toString())) {
+                                                Log.d("tag", "password matches");
+                                                isCorrectPassword = true;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        Log.d("tag", "we are here");
-                        if (isRealUser && isCorrectPassword) {
+                            Log.d("tag", "we are here");
+                            if (isRealUser && isCorrectPassword) {
 
-                            DatabaseReference ref = rootRef.child(editText_username.getText().toString());
-                            username = editText_username.getText().toString();
+                                DatabaseReference ref = rootRef.child(editText_username.getText().toString());
+                                username = editText_username.getText().toString();
 
-                            myDb = new DatabaseHelper(getApplicationContext());
-                            myDb.deleteAllData();
+                                myDb = new DatabaseHelper(getApplicationContext());
+                                myDb.deleteAllData();
 
-                            ref.child("Entries")
-                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                            DatabaseEntry entry = new DatabaseEntry();
-                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                                Log.d("tag", snapshot.getKey());
-                                                for (DataSnapshot snapshot2 : snapshot.getChildren()) {
-                                                    Log.d("tag", snapshot2.getKey() + " " + snapshot2.getValue());
-                                                    if (snapshot2.getKey().toString().matches("Date")) {
-                                                        entry.setDate(snapshot2.getValue().toString());
-                                                    } else if (snapshot2.getKey().toString().matches("Reference Interval")) {
-                                                        entry.setReference_interval(snapshot2.getValue().toString());
-                                                    } else if (snapshot2.getKey().toString().matches("Tests")) {
-                                                        entry.setTests(snapshot2.getValue().toString());
-                                                    } else if (snapshot2.getKey().toString().matches("Units")) {
-                                                        entry.setUnits(snapshot2.getValue().toString());
-                                                    } else if (snapshot2.getKey().toString().matches("Result")) {
-                                                        entry.setResult((snapshot2.getValue().toString()));
+                                ref.child("Entries")
+                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                DatabaseEntry entry = new DatabaseEntry();
+                                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                    Log.d("tag", snapshot.getKey());
+                                                    for (DataSnapshot snapshot2 : snapshot.getChildren()) {
+                                                        Log.d("tag", snapshot2.getKey() + " " + snapshot2.getValue());
+                                                        if (snapshot2.getKey().toString().matches("Date")) {
+                                                            entry.setDate(snapshot2.getValue().toString());
+                                                        } else if (snapshot2.getKey().toString().matches("Reference Interval")) {
+                                                            entry.setReference_interval(snapshot2.getValue().toString());
+                                                        } else if (snapshot2.getKey().toString().matches("Tests")) {
+                                                            entry.setTests(snapshot2.getValue().toString());
+                                                        } else if (snapshot2.getKey().toString().matches("Units")) {
+                                                            entry.setUnits(snapshot2.getValue().toString());
+                                                        } else if (snapshot2.getKey().toString().matches("Result")) {
+                                                            entry.setResult((snapshot2.getValue().toString()));
+                                                        }
                                                     }
+
+                                                    SQLiteDatabase db = myDb.getWritableDatabase();
+
+                                                    // building an object to be inserted
+                                                    ContentValues contentValues = new ContentValues();
+                                                    // the ID field will increase by 1 for each entry
+                                                    contentValues.put(COL_1, (int) (long) myDb.getProfilesCount() + 1);
+                                                    contentValues.put(COL_2, entry.getDate());
+                                                    contentValues.put(COL_3, entry.getTests());
+                                                    contentValues.put(COL_4, entry.getResult());
+                                                    contentValues.put(COL_5, entry.getUnits());
+                                                    contentValues.put(COL_6, entry.getReference_interval());
+
+                                                    db.insert(TABLE_NAME, null, contentValues);
                                                 }
-
-                                                SQLiteDatabase db = myDb.getWritableDatabase();
-
-                                                // building an object to be inserted
-                                                ContentValues contentValues = new ContentValues();
-                                                // the ID field will increase by 1 for each entry
-                                                contentValues.put(COL_1, (int) (long) myDb.getProfilesCount() + 1);
-                                                contentValues.put(COL_2, entry.getDate());
-                                                contentValues.put(COL_3, entry.getTests());
-                                                contentValues.put(COL_4, entry.getResult());
-                                                contentValues.put(COL_5, entry.getUnits());
-                                                contentValues.put(COL_6, entry.getReference_interval());
-
-                                                db.insert(TABLE_NAME, null, contentValues);
                                             }
-                                        }
 
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {
-                                        }
-                                    });
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+                                            }
+                                        });
 
-                            error_login.setText("");
+                                error_login.setText("");
 
-                            startActivity(newActivity);
+                                startActivity(newActivity);
+                            } else if (!isRealUser) {
+                                error_login.setText("Username does not exist. Sign up to add username.");
+                            } else if (!isCorrectPassword) {
+                                error_login.setText("Username and password do not match.");
+                            }
+
                         }
-                        else if (!isRealUser) {
-                            error_login.setText("Username does not exist. Sign up to add username.");
-                        }
-                        else if (!isCorrectPassword) {
-                            error_login.setText("Username and password do not match.");
-                        }
 
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                        }
+                    });
+                }
             }
         });
 
@@ -175,46 +178,49 @@ public class SignUpActivity extends AppCompatActivity {
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!NetworkUtil.isConnected(SignUpActivity.this)) {
+                    error_login.setText("Internet connection must be established to sign up.");
+                } else {
 
-                usernameAlreadyExist = false;
+                    usernameAlreadyExist = false;
 
-                rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            Log.d("tag", snapshot.getKey().toString());
-                            if (snapshot.getKey().toString().matches(editText_username.getText().toString())) {
-                                usernameAlreadyExist = true;
-                                error_login.setText("An account with this username already exists.");
-                                break;
+                    rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                Log.d("tag", snapshot.getKey().toString());
+                                if (snapshot.getKey().toString().matches(editText_username.getText().toString())) {
+                                    usernameAlreadyExist = true;
+                                    error_login.setText("An account with this username already exists.");
+                                    break;
+                                }
                             }
+
+                            if (!usernameAlreadyExist) {
+                                if (editText_username.getText().toString().isEmpty() || editText_username.getText().toString().contains(".")
+                                        || editText_username.getText().toString().contains("#") || editText_username.getText().toString().contains("$")
+                                        || editText_username.getText().toString().contains("[") || editText_username.getText().toString().contains("]")) {
+                                    error_login.setText("Please enter a valid username. Username cannot contain '.', '#', '$', '[' or ']'.");
+                                } else if (editText_password.getText().toString().isEmpty()) {
+                                    error_login.setText("Please enter a valid password.");
+                                } else {
+                                    DatabaseReference ref = rootRef.child(editText_username.getText().toString());
+                                    ref.child("Password").setValue(editText_password.getText().toString());
+                                    //ref.child("Entries").child("ID").setValue(0);
+                                    username = editText_username.getText().toString();
+                                    error_login.setText("");
+                                    Toast.makeText(getApplicationContext(), "Account successfully created", Toast.LENGTH_LONG).show();
+                                }
+                            }
+
                         }
 
-                        if (!usernameAlreadyExist) {
-                            if (editText_username.getText().toString().isEmpty() || editText_username.getText().toString().contains(".")
-                                    || editText_username.getText().toString().contains("#") || editText_username.getText().toString().contains("$")
-                                    || editText_username.getText().toString().contains("[") || editText_username.getText().toString().contains("]")) {
-                                error_login.setText("Please enter a valid username. Username cannot contain '.', '#', '$', '[' or ']'.");
-                            }
-                            else if (editText_password.getText().toString().isEmpty()) {
-                                error_login.setText("Please enter a valid password.");
-                            }
-                            else {
-                                DatabaseReference ref = rootRef.child(editText_username.getText().toString());
-                                ref.child("Password").setValue(editText_password.getText().toString());
-                                //ref.child("Entries").child("ID").setValue(0);
-                                username = editText_username.getText().toString();
-                                error_login.setText("");
-                                Toast.makeText(getApplicationContext(), "Account successfully created", Toast.LENGTH_LONG).show();
-                            }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
                         }
+                    });
 
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-
+                }
             }
         });
     }

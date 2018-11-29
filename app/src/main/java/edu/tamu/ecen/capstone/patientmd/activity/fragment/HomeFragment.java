@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Network;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -188,6 +189,12 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Record Button:: insert manual record");
+                if (!NetworkUtil.isConnected(getActivity())) {
+                    Toast.makeText(getContext(), "This feature requires internet connection", Toast.LENGTH_LONG).show();
+                }
+
+                else {
+
                 AlertDialog.Builder builder_add_existing = new AlertDialog.Builder(getContext());
                 builder_add_existing.setTitle("ADD NEW ENTRY");
 
@@ -199,6 +206,7 @@ public class HomeFragment extends Fragment {
                     private String current = "";
                     private String ddmmyyyy = "MMDDYYYY";
                     private Calendar cal = Calendar.getInstance();
+
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         if (!s.toString().equals(current)) {
@@ -213,25 +221,25 @@ public class HomeFragment extends Fragment {
                             //Fix for pressing delete next to a forward slash
                             if (clean.equals(cleanC)) sel--;
 
-                            if (clean.length() < 8){
+                            if (clean.length() < 8) {
                                 clean = clean + ddmmyyyy.substring(clean.length());
-                            }else{
+                            } else {
                                 //This part makes sure that when we finish entering numbers
                                 //the date is correct, fixing it otherwise
-                                int day  = Integer.parseInt(clean.substring(2,4));
-                                int mon  = Integer.parseInt(clean.substring(0,2));
-                                int year = Integer.parseInt(clean.substring(4,8));
+                                int day = Integer.parseInt(clean.substring(2, 4));
+                                int mon = Integer.parseInt(clean.substring(0, 2));
+                                int year = Integer.parseInt(clean.substring(4, 8));
 
                                 mon = mon < 1 ? 1 : mon > 12 ? 12 : mon;
-                                cal.set(Calendar.MONTH, mon-1);
-                                year = (year<1900)?1900:(year>2100)?2100:year;
+                                cal.set(Calendar.MONTH, mon - 1);
+                                year = (year < 1900) ? 1900 : (year > 2100) ? 2100 : year;
                                 cal.set(Calendar.YEAR, year);
                                 // ^ first set year for the line below to work correctly
                                 //with leap years - otherwise, date e.g. 29/02/2012
                                 //would be automatically corrected to 28/02/2012
 
-                                day = (day > cal.getActualMaximum(Calendar.DATE))? cal.getActualMaximum(Calendar.DATE):day;
-                                clean = String.format("%02d%02d%02d",mon, day, year);
+                                day = (day > cal.getActualMaximum(Calendar.DATE)) ? cal.getActualMaximum(Calendar.DATE) : day;
+                                clean = String.format("%02d%02d%02d", mon, day, year);
                             }
 
                             clean = String.format("%s/%s/%s", clean.substring(0, 2),
@@ -244,11 +252,14 @@ public class HomeFragment extends Fragment {
                             editText_date.setSelection(sel < current.length() ? sel : current.length());
                         }
                     }
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
                     @Override
-                    public void afterTextChanged(Editable s) {}
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                    }
 
                 };
 
@@ -283,8 +294,7 @@ public class HomeFragment extends Fragment {
                                 if (editText_result.getText().toString().equals("") || editText_result.getText().toString().equals("NUMERICAL VALUE")) {
                                     error_result.setText(R.string.error_result_string);
                                     error = true;
-                                }
-                                else {
+                                } else {
                                     error_result.setText("");
                                     error = false;
                                 }
@@ -293,8 +303,7 @@ public class HomeFragment extends Fragment {
                                         || editText_date.getText().toString().contains("Y")) {
                                     error_date.setText("Input must be a date in the MM/DD/YYYY format.");
                                     error = true;
-                                }
-                                else {
+                                } else {
                                     error_date.setText("");
                                     error = false;
                                 }
@@ -302,8 +311,8 @@ public class HomeFragment extends Fragment {
                                     String reference_interval = "";
                                     String units = "";
                                     Cursor res = myDb.getAllData();
-                                    while(res.moveToNext()){
-                                        if (res.getString(2).matches(spinner_tests.getSelectedItem().toString())){
+                                    while (res.moveToNext()) {
+                                        if (res.getString(2).matches(spinner_tests.getSelectedItem().toString())) {
                                             reference_interval = res.getString(5);
                                             units = res.getString(4);
                                             break;
@@ -318,7 +327,7 @@ public class HomeFragment extends Fragment {
                                     if (isInserted)
                                         Toast.makeText(getActivity(), "Entry Successfully Added", Toast.LENGTH_LONG).show();
                                     else
-                                       Toast.makeText(getActivity(), "An error occurred in adding the entry", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getActivity(), "An error occurred in adding the entry", Toast.LENGTH_LONG).show();
                                 }
 
                             }
@@ -330,6 +339,7 @@ public class HomeFragment extends Fragment {
 
                 SpinnerTests();
             }
+            }
         });
 
         deleteButton = view.findViewById(R.id.delete_button);
@@ -337,6 +347,11 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Record Button:: insert manual record");
+                if (!NetworkUtil.isConnected(getActivity())) {
+                    Toast.makeText(getContext(), "This feature requires internet connection", Toast.LENGTH_LONG).show();
+                }
+                else {
+
                 AlertDialog.Builder builder_delete = new AlertDialog.Builder(getContext());
                 builder_delete.setTitle("DELETE ENTRY");
 
@@ -368,17 +383,16 @@ public class HomeFragment extends Fragment {
                             @Override
                             public void onClick(View view) {
                                 Cursor res = myDb.getAllData();
-                                if(res.getCount() == 0) {
+                                if (res.getCount() == 0) {
                                     my_dialog.dismiss();
-                                }
-                                else {
+                                } else {
                                     entries.clear();
                                     entries = myDb.queryData("Tests", item);
                                     entries = OrderEntries(entries);
                                     final ArrayList<Integer> mUserItems = new ArrayList<>();
                                     listItems = new String[entries.size()];
 
-                                    for(int i = 0; i < entries.size(); ++i) {
+                                    for (int i = 0; i < entries.size(); ++i) {
                                         listItems[i] = entries.get(i).getDate() + ", " + entries.get(i).getResult() + " " + entries.get(i).getUnits();
                                     }
 
@@ -390,13 +404,12 @@ public class HomeFragment extends Fragment {
                                     mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
-                                            if(isChecked) {
-                                                if(!mUserItems.contains(position)) {
+                                            if (isChecked) {
+                                                if (!mUserItems.contains(position)) {
                                                     mUserItems.add(position);
                                                 }
-                                            }
-                                            else if (mUserItems.contains(position)) {
-                                                mUserItems.remove((Integer)position);
+                                            } else if (mUserItems.contains(position)) {
+                                                mUserItems.remove((Integer) position);
                                             }
                                         }
                                     });
@@ -420,9 +433,8 @@ public class HomeFragment extends Fragment {
                                                     int id = 0;
                                                     if (mUserItems.size() == 0) {
                                                         ShowMessage("INPUT ERROR", "Please select at least one entry to delete.");
-                                                    }
-                                                    else{
-                                                        int [] indexes = new int[mUserItems.size()];
+                                                    } else {
+                                                        int[] indexes = new int[mUserItems.size()];
                                                         for (int i = 0; i < mUserItems.size(); ++i) {
                                                             if (i == 0)
                                                                 indexes[0] = 0;
@@ -443,8 +455,7 @@ public class HomeFragment extends Fragment {
                                                     if (deleted_rows > 0) {
                                                         Toast.makeText(getActivity(), "Entries Successfully Deleted", Toast.LENGTH_LONG).show();
                                                         mDialog.dismiss();
-                                                    }
-                                                    else {
+                                                    } else {
                                                         Toast.makeText(getActivity(), "An error occurred in deleting the entries", Toast.LENGTH_LONG).show();
                                                     }
 
@@ -462,6 +473,7 @@ public class HomeFragment extends Fragment {
                 });
 
                 my_dialog.show();
+            }
 
             }
 
@@ -473,6 +485,14 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Record Button:: insert manual record");
+
+                if (!NetworkUtil.isConnected(getActivity())) {
+                    Toast.makeText(getContext(), "This feature requires internet connection", Toast.LENGTH_LONG).show();
+                }
+
+                else {
+
+
                 AlertDialog.Builder builder_edit = new AlertDialog.Builder(getContext());
                 builder_edit.setTitle("EDIT ENTRY");
 
@@ -504,16 +524,15 @@ public class HomeFragment extends Fragment {
                             @Override
                             public void onClick(View view) {
                                 Cursor res = myDb.getAllData();
-                                if(res.getCount() == 0) {
+                                if (res.getCount() == 0) {
                                     my_dialog.dismiss();
-                                }
-                                else {
+                                } else {
                                     entries.clear();
                                     entries = myDb.queryData("Tests", item);
                                     entries = OrderEntries(entries);
                                     listItems = new String[entries.size()];
 
-                                    for(int i = 0; i < entries.size(); ++i) {
+                                    for (int i = 0; i < entries.size(); ++i) {
                                         listItems[i] = entries.get(i).getDate() + ", " + entries.get(i).getResult() + " " + entries.get(i).getUnits();
                                     }
 
@@ -525,8 +544,8 @@ public class HomeFragment extends Fragment {
                                         public void onClick(DialogInterface dialogInterface, int position) {
                                             pos = position;
                                             String selected = listItems[position];
-                                            String date =  selected.substring(0, selected.indexOf(','));
-                                            String value = selected.substring(selected.indexOf(',')+2, selected.indexOf(' ', selected.indexOf(',')+2));
+                                            String date = selected.substring(0, selected.indexOf(','));
+                                            String value = selected.substring(selected.indexOf(',') + 2, selected.indexOf(' ', selected.indexOf(',') + 2));
 
                                             for (int i = 0; i < entries.size(); ++i) {
                                                 if (entries.get(i).getDate().equals(date) && entries.get(i).getResult().equals(value))
@@ -545,6 +564,7 @@ public class HomeFragment extends Fragment {
                                                 private String current = "";
                                                 private String ddmmyyyy = "MMDDYYYY";
                                                 private Calendar cal = Calendar.getInstance();
+
                                                 @Override
                                                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                                                     if (!s.toString().equals(current)) {
@@ -559,25 +579,25 @@ public class HomeFragment extends Fragment {
                                                         //Fix for pressing delete next to a forward slash
                                                         if (clean.equals(cleanC)) sel--;
 
-                                                        if (clean.length() < 8){
+                                                        if (clean.length() < 8) {
                                                             clean = clean + ddmmyyyy.substring(clean.length());
-                                                        }else{
+                                                        } else {
                                                             //This part makes sure that when we finish entering numbers
                                                             //the date is correct, fixing it otherwise
-                                                            int day  = Integer.parseInt(clean.substring(2,4));
-                                                            int mon  = Integer.parseInt(clean.substring(0,2));
-                                                            int year = Integer.parseInt(clean.substring(4,8));
+                                                            int day = Integer.parseInt(clean.substring(2, 4));
+                                                            int mon = Integer.parseInt(clean.substring(0, 2));
+                                                            int year = Integer.parseInt(clean.substring(4, 8));
 
                                                             mon = mon < 1 ? 1 : mon > 12 ? 12 : mon;
-                                                            cal.set(Calendar.MONTH, mon-1);
-                                                            year = (year<1900)?1900:(year>2100)?2100:year;
+                                                            cal.set(Calendar.MONTH, mon - 1);
+                                                            year = (year < 1900) ? 1900 : (year > 2100) ? 2100 : year;
                                                             cal.set(Calendar.YEAR, year);
                                                             // ^ first set year for the line below to work correctly
                                                             //with leap years - otherwise, date e.g. 29/02/2012
                                                             //would be automatically corrected to 28/02/2012
 
-                                                            day = (day > cal.getActualMaximum(Calendar.DATE))? cal.getActualMaximum(Calendar.DATE):day;
-                                                            clean = String.format("%02d%02d%02d",mon, day, year);
+                                                            day = (day > cal.getActualMaximum(Calendar.DATE)) ? cal.getActualMaximum(Calendar.DATE) : day;
+                                                            clean = String.format("%02d%02d%02d", mon, day, year);
                                                         }
 
                                                         clean = String.format("%s/%s/%s", clean.substring(0, 2),
@@ -590,11 +610,14 @@ public class HomeFragment extends Fragment {
                                                         editText_date.setSelection(sel < current.length() ? sel : current.length());
                                                     }
                                                 }
-                                                @Override
-                                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
                                                 @Override
-                                                public void afterTextChanged(Editable s) {}
+                                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                                                }
+
+                                                @Override
+                                                public void afterTextChanged(Editable s) {
+                                                }
 
                                             };
 
@@ -639,8 +662,7 @@ public class HomeFragment extends Fragment {
                                                             if (editText_result.getText().toString().equals("") || editText_result.getText().toString().equals("NUMERICAL VALUE")) {
                                                                 error_result.setText(R.string.error_result_string);
                                                                 error = true;
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 error_result.setText("");
                                                             }
                                                             if (editText_date.getText().toString().equals("")
@@ -648,15 +670,13 @@ public class HomeFragment extends Fragment {
                                                                     || editText_date.getText().toString().contains("Y")) {
                                                                 error_date.setText("Input must be a date in the MM/DD/YYYY format.");
                                                                 error = true;
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 error_date.setText("");
                                                             }
                                                             if (editText_units.getText().toString().equals("")) {
                                                                 error_units.setText("Input must be a unit.");
                                                                 error = true;
-                                                            }
-                                                            else
+                                                            } else
                                                                 error_units.setText("");
 
                                                             if (!error) {
@@ -666,12 +686,11 @@ public class HomeFragment extends Fragment {
                                                                         editText_result.getText().toString(),
                                                                         editText_units.getText().toString(),
                                                                         entries.get(pos).getReference_interval());
-                                                                if(isUpdate) {
+                                                                if (isUpdate) {
                                                                     Toast.makeText(getActivity(), "Entry Successfully Edited", Toast.LENGTH_LONG).show();
                                                                     my_dialog.dismiss();
-                                                                }
-                                                                else
-                                                                    Toast.makeText(getActivity(),"Error in editing data",Toast.LENGTH_LONG).show();
+                                                                } else
+                                                                    Toast.makeText(getActivity(), "Error in editing data", Toast.LENGTH_LONG).show();
                                                             }
 
                                                         }
@@ -697,6 +716,7 @@ public class HomeFragment extends Fragment {
                 });
 
                 my_dialog.show();
+            }
 
             }
 

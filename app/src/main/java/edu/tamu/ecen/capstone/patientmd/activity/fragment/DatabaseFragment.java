@@ -40,6 +40,7 @@ import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.util.MedicalSample;
 
 import edu.tamu.ecen.capstone.patientmd.R;
+import edu.tamu.ecen.capstone.patientmd.util.NetworkUtil;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -222,16 +223,24 @@ public class DatabaseFragment extends Fragment {
     }
 
     public void UpdateData() {
+
+
         btnUpdate.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        boolean isUpdate = myDb.updateData(editID.getText().toString(),
-                                editDate.getText().toString(),
-                                editTests.getText().toString(),
-                                editResult.getText().toString(),
-                                editUnits.getText().toString(),
-                                editReference_Interval.getText().toString());
+                        boolean connected = NetworkUtil.isConnected(getActivity());
+
+                        if (connected) {
+                            boolean isUpdate = myDb.updateData(editID.getText().toString(),
+                                    editDate.getText().toString(),
+                                    editTests.getText().toString(),
+                                    editResult.getText().toString(),
+                                    editUnits.getText().toString(),
+                                    editReference_Interval.getText().toString());
+
+                            Log.d(TAG, "Database updated: " + isUpdate);
+                        }
 //                        if(isUpdate)
 //                            Toast.makeText(DatabaseActivity.this,"Data Update",Toast.LENGTH_LONG).show();
 //                        else

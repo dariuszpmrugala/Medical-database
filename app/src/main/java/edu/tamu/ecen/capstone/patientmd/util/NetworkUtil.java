@@ -341,7 +341,7 @@ public class NetworkUtil {
                 File csv = null;
                 int reqCount = 0;
                 if (rCode == 200) {
-                    Thread.sleep(35000);
+                    Thread.sleep(15000);
 
                     Log.d(TAG, "POST worked, now sending GETs");
 

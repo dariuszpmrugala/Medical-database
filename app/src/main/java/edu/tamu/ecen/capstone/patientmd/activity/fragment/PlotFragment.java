@@ -337,7 +337,8 @@ public class PlotFragment extends Fragment {
                 if (reference_interval[1] > -.99 || reference_interval[1] > -.99) {
                     DataPoint[] end_points_low = new DataPoint[2];
                     end_points_low[0] = new DataPoint(x_min, reference_interval[0]);
-                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+                    //end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+                    end_points_low[1] = new DataPoint(x_max.getTime() + x_max.getTime() * 0.001d, reference_interval[0]);
 
                     LineGraphSeries<DataPoint> series3 = new LineGraphSeries<>(end_points_low);
                     series3.setTitle("Min Level");
@@ -346,7 +347,7 @@ public class PlotFragment extends Fragment {
 
                     DataPoint[] end_points_high = new DataPoint[2];
                     end_points_high[0] = new DataPoint(x_min, reference_interval[1]);
-                    end_points_high[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[1]);
+                    end_points_high[1] = new DataPoint(x_max.getTime() + x_max.getTime() * 0.001d, reference_interval[1]);
 
                     LineGraphSeries<DataPoint> series4 = new LineGraphSeries<>(end_points_high);
                     series4.setTitle("Max Level");
@@ -357,7 +358,8 @@ public class PlotFragment extends Fragment {
                 else if (reference_interval[1] == -1.0){
                     DataPoint[] end_points_low = new DataPoint[2];
                     end_points_low[0] = new DataPoint(x_min, reference_interval[0]);
-                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+//                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+                    end_points_low[1] = new DataPoint(x_max.getTime() + x_max.getTime() * 0.001d, reference_interval[0]);
 
                     LineGraphSeries<DataPoint> series3 = new LineGraphSeries<>(end_points_low);
                     series3.setTitle("Min Level");
@@ -368,7 +370,8 @@ public class PlotFragment extends Fragment {
                 else if (reference_interval[1] == -2.0){
                     DataPoint[] end_points_low = new DataPoint[2];
                     end_points_low[0] = new DataPoint(x_min, reference_interval[0]);
-                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+//                    end_points_low[1] = new DataPoint(points[entries.size() - 1].getX(), reference_interval[0]);
+                    end_points_low[1] = new DataPoint(x_max.getTime() + x_max.getTime() * 0.001d, reference_interval[0]);
 
                     LineGraphSeries<DataPoint> series3 = new LineGraphSeries<>(end_points_low);
                     series3.setTitle("Max Level");

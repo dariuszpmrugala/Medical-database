@@ -1,5 +1,7 @@
 package edu.tamu.ecen.capstone.patientmd.activity;
 
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
@@ -16,12 +18,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.util.Log;
 
+import com.google.android.gms.common.oob.SignUp;
+
 import java.io.File;
 
 import edu.tamu.ecen.capstone.patientmd.R;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.HomeFragment;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.PlotFragment;
 import edu.tamu.ecen.capstone.patientmd.activity.fragment.RecordFragment;
+import edu.tamu.ecen.capstone.patientmd.database.DatabaseHelper;
 import edu.tamu.ecen.capstone.patientmd.util.Util;
 
 
@@ -30,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextMessage;
 
     private final String TAG = "MainActivity: ";
+
+    DatabaseHelper myDb;
 
     private int mSelectedItem;
 
@@ -57,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        myDb = new DatabaseHelper(this);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate");
@@ -92,6 +100,32 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.miHelp:
+                ShowMessage("Help", "Taking a Picture: \n\n" +
+                        "-  Use a 4:3 perspective\n" +
+                        "-  Ensure good overhead lighting\n" +
+                        "-  No papers underneath the record\n" +
+                        "-  No wrinkled papers\n" +
+                        "-  Landscape images are acceptable\n\n");
+                return true;
+
+            case R.id.miProfile:
+                myDb.deleteAllData();
+                Intent myIntent = new Intent(this, SignUpActivity.class);
+                this.startActivity(myIntent);
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     /*
@@ -181,6 +215,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return false;
+    }
+
+    public void ShowMessage(String title,String Message){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setTitle(title);
+        builder.setMessage(Message);
+        builder.show();
     }
 
 
